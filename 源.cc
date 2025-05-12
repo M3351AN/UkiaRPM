@@ -30,9 +30,9 @@ int Mian()
 	
 	DWORD processId = Ukia::GetProc(L"Tutorial-x86_64.exe");
 
-	uintptr_t baseAddress = Ukia::GetModuleBaseAddr(processId, L"Tutorial-x86_64.exe");
-
 	HANDLE processHandle = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, processId);
+
+	uintptr_t baseAddress = Ukia::GetModuleBaseAddr(processId, L"Tutorial-x86_64.exe");
 
 	uintptr_t ptrAddress = baseAddress + offsets::ctAddress;
 	uintptr_t valAddr = Ukia::DeRefPtr<uintptr_t>(processHandle, ptrAddress, offsets::ptrOffsets);
