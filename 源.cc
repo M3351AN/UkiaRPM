@@ -42,7 +42,7 @@ int Mian()
 		long long iVal;
 		while (iHP) {
 			system("cls");
-			printf(XorStr("嘘っぱちのファンデーションも全部今夜のためよ~\n"));
+			printf(XorStr("\u3069\u3093\u304c\u3089\u304c\u3063\u3057\u3083\u3093\u30d5\u30a3\u30fc\u30eb\u30ac\u30fc\u30eb\u306f\u6d99\u306e\u76ee\u306b\u3082\u9b3c\n"));
 			Ukia::ProcessMgr.ReadMemory(valAddr, iVal);
 			std::cout << XorStr("You have HP: ") << (iVal >= 100 ? XorStr("\033[32m") : XorStr("\033[31m")) << iVal << XorStr("\033[0m") << XorStr(" now.\n");
 			iHP = 0;

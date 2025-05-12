@@ -10,6 +10,7 @@
 #include <vector>
 #include <TlHelp32.h>
 #include <psapi.h>
+#include <memory>
 #include <atlconv.h>
 #define WIN32_LEAN_AND_MEAN
 #pragma comment(lib, "iphlpapi.lib")
