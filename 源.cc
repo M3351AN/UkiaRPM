@@ -9,42 +9,6 @@
 using namespace std;
 
 namespace offsets {
-	/*<?xml version="1.0" encoding="utf-8"?>
-	<CheatTable CheatEngineTableVersion="46">
-	  <CheatEntries>
-		<CheatEntry>
-		  <ID>0</ID>
-		  <Description>"REL"</Description>
-		  <VariableType>4 Bytes</VariableType>
-		  <Address>"mono.dll"+00296BC8</Address>
-		  <Offsets>
-			<Offset>E8</Offset>
-			<Offset>0</Offset>
-			<Offset>330</Offset>
-			<Offset>20</Offset>
-		  </Offsets>
-		</CheatEntry>
-		<CheatEntry>
-		  <ID>1</ID>
-		  <Description>"VIEW"</Description>
-		  <VariableType>4 Bytes</VariableType>
-		  <Address>"mono.dll"+00296BC8</Address>
-		  <Offsets>
-			<Offset>F8</Offset>
-			<Offset>0</Offset>
-			<Offset>80</Offset>
-			<Offset>38</Offset>
-			<Offset>F8</Offset>
-			<Offset>318</Offset>
-			<Offset>1D0</Offset>
-		  </Offsets>
-		</CheatEntry>
-	  </CheatEntries>
-	  <UserdefinedSymbols/>
-	  <Comments>Info about this table:
-	</Comments>
-	</CheatTable>
-	*/
 	constexpr std::uintptr_t ctAddress = 0x0034EC10;
 	std::vector<uintptr_t> ptrOffsets = { 0x7f8, 0x28, 0xd0, 0x18, 0xf8, 0x18, 0x460, };
 }
