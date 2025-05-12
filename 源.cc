@@ -10,7 +10,7 @@ using namespace std;
 
 namespace offsets {
 	constexpr std::uintptr_t ctAddress = 0x0034EC10;
-	std::vector<uintptr_t> ptrOffsets = { 0x7f8, 0x28, 0xd0, 0x18, 0xf8, 0x18, 0x460, };
+	std::vector<DWORD> ptrOffsets = { 0x460, 0x18, 0xf8, 0x18, 0xd0, 0x28, 0x7f8 };//{ 0x7f8, 0x28, 0xd0, 0x18, 0xf8, 0x18, 0x460 };
 }
 
 int Mian()
@@ -28,14 +28,14 @@ int Mian()
 	string strHWID = Ukia::GenHwid();
 	printf(XorStr("%s\n"), strHWID.substr(strHWID.length() - 16).c_str());
 	
-	DWORD processId = Ukia::GetProc(L"Tutorial-x86_64.exe");
+	if (!Ukia::ProcessMgr.Attach(XorStr("Tutorial-x86_64.exe")))
+		return -1;
+	DWORD processId = Ukia::ProcessMgr.ProcessID;
 
-	HANDLE processHandle = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE, processId);
-
-	uintptr_t baseAddress = Ukia::GetModuleBaseAddr(processId, L"Tutorial-x86_64.exe");
+	uintptr_t baseAddress = reinterpret_cast<uintptr_t>(Ukia::ProcessMgr.GetProcessModuleHandle(XorStr("Tutorial-x86_64.exe")));
 
 	uintptr_t ptrAddress = baseAddress + offsets::ctAddress;
-	uintptr_t valAddr = Ukia::DeRefPtr<uintptr_t>(processHandle, ptrAddress, offsets::ptrOffsets);
+	uintptr_t valAddr = Ukia::ProcessMgr.TraceAddress(ptrAddress, offsets::ptrOffsets);
 	//Sleep(3000);
 	while (true) {
 		long long iHP = -1;
@@ -43,14 +43,15 @@ int Mian()
 		while (iHP) {
 			system("cls");
 			printf(XorStr("剟勻天切及白央件犯奈扑亦件手�垓蕭鵊馱峇縣嶀鋓\n"));
-            iVal = Ukia::ReadAddr<long long>(processHandle, valAddr);
+			Ukia::ProcessMgr.ReadMemory(valAddr, iVal);
 			std::cout << XorStr("You have HP: ") << (iVal >= 100 ? XorStr("\033[32m") : XorStr("\033[31m")) << iVal << XorStr("\033[0m") << XorStr(" now.\n");
 			iHP = 0;
 		}
 		printf(XorStr("How much HP u wanna gain?\n"));
 		std::cin >> iHP;
-		iVal = Ukia::ReadAddr<long long>(processHandle, valAddr);//User may cost / gain HP before enter.
-		Ukia::WriteAddr<long long>(processHandle, valAddr, iHP + iVal);
+		Ukia::ProcessMgr.ReadMemory(valAddr, iVal);//User may cost / gain HP before enter.
+		iHP += iVal;
+		Ukia::ProcessMgr.WriteMemory(valAddr, iHP);
 		Sleep(250);
 	}
 
