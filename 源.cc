@@ -1,4 +1,4 @@
-#include <chrono>
+Ôªø#include <chrono>
 #include <filesystem>
 #include <iomanip>
 #include <ShlObj.h>
@@ -42,7 +42,7 @@ int Mian()
 		long long iVal;
 		while (iHP) {
 			system("cls");
-			printf(XorStr("–Í§√§—§¡§Œ•’•°•Û•«©`•∑•Á•Û§‚»´≤øΩÒ“π§Œ§ø§·§Ë~\n"));
+			printf(XorStr("Âòò„Å£„Å±„Å°„ÅÆ„Éï„Ç°„É≥„Éá„Éº„Ç∑„Éß„É≥„ÇÇÂÖ®ÈÉ®‰ªäÂ§ú„ÅÆ„Åü„ÇÅ„Çà~\n"));
 			Ukia::ProcessMgr.ReadMemory(valAddr, iVal);
 			std::cout << XorStr("You have HP: ") << (iVal >= 100 ? XorStr("\033[32m") : XorStr("\033[31m")) << iVal << XorStr("\033[0m") << XorStr(" now.\n");
 			iHP = 0;
