@@ -596,8 +596,7 @@ HANDLE UkiaOpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
       GetModuleHandleW(L"ntdll.dll"), "NtOpenProcess");
   CLIENT_ID clientId = {(HANDLE)dwProcessId, NULL};
   OBJECT_ATTRIBUTES objAttr = InitObjectAttributes(NULL, 0, NULL, NULL);
-  NtOpenProcess(&hProcess,
-                PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE,
+  NtOpenProcess(&hProcess, dwDesiredAccess,
                 &objAttr, &clientId);
   return hProcess;
 }
@@ -730,9 +729,8 @@ class ProcessManager {
     // hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ |
     // PROCESS_VM_WRITE, FALSE, ProcessID);
 
-    hProcess = UkiaOpenProcess(
-        PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE, FALSE,
-        ProcessID);
+    hProcess = UkiaOpenProcess(PROCESS_QUERY_LIMITED_INFORMATION |PROCESS_VM_OPERATION |
+                            PROCESS_VM_READ | PROCESS_VM_WRITE,FALSE,ProcessID);
 
     // hProcess = HijackExistingHandle(ProcessID);failed, idk why.
 
