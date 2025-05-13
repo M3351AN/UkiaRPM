@@ -6,6 +6,10 @@
 #include <iphlpapi.h>
 #include <psapi.h>
 
+#include <cstdio>
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -16,6 +20,16 @@
 #define WIN32_LEAN_AND_MEAN
 #pragma comment(lib, "iphlpapi.lib")
 
+constexpr uint32_t CompileTimeSeed() {
+  const char* time_str = __TIME__ __DATE__;
+  uint32_t hash = 0;
+  for (int i = 0; time_str[i] != '\0'; ++i) {
+    hash = hash * 65599 + time_str[i];  // 简单哈希算法
+  }
+  return hash;
+}
+constexpr int kPadding = CompileTimeSeed();
+// So that we can get randon .exe file Hash even codes are 100% same.
 #define _is_invalid(v) \
   if (v == NULL) return false
 #define _is_invalid(v, n) \
@@ -128,6 +142,156 @@ void AntiDebugger(std::string log = "") noexcept {
     ShowWindow(GetConsoleWindow(), false);
     exit(0);
   }
+}
+
+std::string GetSelfPath() {
+  char pathBuffer[MAX_PATH] = {0};
+
+  if (GetModuleFileNameA(NULL, pathBuffer, sizeof(pathBuffer)) == 0) {
+    perror("GetModuleFileNameA failed");
+    return "";
+  }
+  return std::string(pathBuffer);
+}
+// 检查是否有 --hash-ready 参数
+bool HasHashReadyParameter(int argc, char* argv[]) {
+  for (int i = 1; i < argc; ++i) {
+    if (strcmp(argv[i], "--hash-ready") == 0) return true;
+  }
+  return false;
+}
+
+void PreUpdateHash(const std::string& exePath) {
+  size_t pos = exePath.find_last_of("\\/");
+  std::string folder =
+      (pos != std::string::npos) ? exePath.substr(0, pos + 1) : "";
+  std::string exeName =
+      (pos != std::string::npos) ? exePath.substr(pos + 1) : exePath;
+  srand(static_cast<unsigned int>(time(nullptr)));
+  long long randomName = (rand() << 15) + rand();
+  std::ostringstream oss;
+  oss << folder << "ukiaUpd_" << std::hex << randomName << ".bat";
+  std::string batPath = oss.str();
+
+  std::ofstream batFile(batPath);
+  if (!batFile) {
+    fprintf(stderr, "failed create shell: %s\n", batPath.c_str());
+    return;
+  }
+
+  batFile << "@echo off\n";
+  batFile
+      << "powershell -NoProfile -Command \""
+      << "$exePath = '%~dp0" << exeName << "'; "
+      << "$fs = [System.IO.File]::Open($exePath, [System.IO.FileMode]::Open, "
+         "[System.IO.FileAccess]::ReadWrite); "
+      << "try { "
+      << "  $fs.Seek(0, [System.IO.SeekOrigin]::End) | Out-Null; "
+      << "  $length = $fs.Length; "
+      << "  $bufferSize = [Math]::Min(1024, $length); "
+      << "  $fs.Seek(-$bufferSize, [System.IO.SeekOrigin]::End) | Out-Null; "
+      << "  $buffer = New-Object Byte[] $bufferSize; "
+      << "  $fs.Read($buffer, 0, $bufferSize) | Out-Null; "
+      << "  $text = [System.Text.Encoding]::ASCII.GetString($buffer); "
+      << "  if($text -match '##TE_QUIERO_MUCHO##(.*?)##UKIA_LOVES_YOU##') { "
+      << "      $newHash = " << randomName << " ; "
+      << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
+         "'##UKIA_LOVES_YOU##'; "
+      << "      $match = [System.Text.RegularExpressions.Regex]::Match($text, "
+         "'##TE_QUIERO_MUCHO##.*?##UKIA_LOVES_YOU##'); "
+      << "      if($match.Success) { "
+      << "          $matchIndex = $match.Index; "
+      << "          $absoluteIndex = $length - $bufferSize + $matchIndex; "
+      << "          $fs.SetLength($absoluteIndex); "
+      << "          $writer = New-Object System.IO.BinaryWriter($fs); "
+      << "          "
+         "$writer.Write([System.Text.Encoding]::ASCII.GetBytes($newBlock)); "
+      << "          $writer.Flush(); "
+      << "          $writer.Close(); "
+      << "      } "
+      << "  } else { "
+      << "      $newHash = " << randomName << " ; "
+      << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
+         "'##UKIA_LOVES_YOU##'; "
+      << "      $writer = New-Object System.IO.BinaryWriter($fs); "
+      << "      "
+         "$writer.Write([System.Text.Encoding]::ASCII.GetBytes($newBlock)); "
+      << "      $writer.Flush(); "
+      << "      $writer.Close(); "
+      << "  } "
+      << "} finally { $fs.Close(); }\" \n";
+  batFile << "start \"\" \"%~dp0" << exeName << "\" --hash-ready\n";
+  batFile << "del \"%~f0\"\n";
+  batFile.close();
+
+  ShellExecuteA(NULL, "open", batPath.c_str(), NULL,
+                folder.empty() ? NULL : folder.c_str(), SW_HIDE);
+}
+void PostUpdateHash(const std::string& exePath) {
+  size_t pos = exePath.find_last_of("\\/");
+  std::string folder =
+      (pos != std::string::npos) ? exePath.substr(0, pos + 1) : "";
+  std::string exeName =
+      (pos != std::string::npos) ? exePath.substr(pos + 1) : exePath;
+  srand(static_cast<unsigned int>(time(nullptr)));
+  long long randomName = (rand() << 15) - rand() << 1;
+  std::ostringstream oss;
+  oss << folder << "ukiaUpd_" << std::hex << randomName << ".bat";
+  std::string batPath = oss.str();
+
+  std::ofstream batFile(batPath);
+  if (!batFile) {
+    fprintf(stderr, "failed create shell: %s\n", batPath.c_str());
+    return;
+  }
+
+  batFile << "@echo off\n";
+  batFile << "timeout /t 0.5 /nobreak >nul\n";
+  batFile
+      << "powershell -NoProfile -Command \""
+      << "$exePath = '%~dp0" << exeName << "'; "
+      << "$fs = [System.IO.File]::Open($exePath, [System.IO.FileMode]::Open, "
+         "[System.IO.FileAccess]::ReadWrite); "
+      << "try { "
+      << "  $fs.Seek(0, [System.IO.SeekOrigin]::End) | Out-Null; "
+      << "  $length = $fs.Length; "
+      << "  $bufferSize = [Math]::Min(1024, $length); "
+      << "  $fs.Seek(-$bufferSize, [System.IO.SeekOrigin]::End) | Out-Null; "
+      << "  $buffer = New-Object Byte[] $bufferSize; "
+      << "  $fs.Read($buffer, 0, $bufferSize) | Out-Null; "
+      << "  $text = [System.Text.Encoding]::ASCII.GetString($buffer); "
+      << "  if($text -match '##TE_QUIERO_MUCHO##(.*?)##UKIA_LOVES_YOU##') { "
+      << "      $newHash = " << randomName << " ; "
+      << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
+         "'##UKIA_LOVES_YOU##'; "
+      << "      $match = [System.Text.RegularExpressions.Regex]::Match($text, "
+         "'##TE_QUIERO_MUCHO##.*?##UKIA_LOVES_YOU##'); "
+      << "      if($match.Success) { "
+      << "          $matchIndex = $match.Index; "
+      << "          $absoluteIndex = $length - $bufferSize + $matchIndex; "
+      << "          $fs.SetLength($absoluteIndex); "
+      << "          $writer = New-Object System.IO.BinaryWriter($fs); "
+      << "          "
+         "$writer.Write([System.Text.Encoding]::ASCII.GetBytes($newBlock)); "
+      << "          $writer.Flush(); "
+      << "          $writer.Close(); "
+      << "      } "
+      << "  } else { "  // idk, but if he would deleted it manually? haha
+      << "      $newHash = " << randomName << " ; "
+      << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
+         "'##UKIA_LOVES_YOU##'; "
+      << "      $writer = New-Object System.IO.BinaryWriter($fs); "
+      << "      "
+         "$writer.Write([System.Text.Encoding]::ASCII.GetBytes($newBlock)); "
+      << "      $writer.Flush(); "
+      << "      $writer.Close(); "
+      << "  } "
+      << "} finally { $fs.Close(); }\" \n";
+  batFile << "del \"%~f0\"\n";
+  batFile.close();
+
+  ShellExecuteA(NULL, "open", batPath.c_str(), NULL,
+                folder.empty() ? NULL : folder.c_str(), SW_HIDE);
 }
 void RandomTitle() noexcept {
   constexpr int length = 25;
