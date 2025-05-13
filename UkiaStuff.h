@@ -175,8 +175,8 @@ void PreUpdateHash(const std::string& exePath) {
   std::string exeName =
       (pos != std::string::npos) ? exePath.substr(pos + 1) : exePath;
   srand(static_cast<unsigned int>(time(nullptr)));
-  long long randomName =
-      (static_cast<long long>(rand()) << 15) + (static_cast<long long>(rand() * 2654435761u));
+  long long randomName = (static_cast<long long>(rand()) << 15) +
+                         (static_cast<long long>(rand() * 2654435761u));
   std::ostringstream oss;
   oss << folder << "ukiaUpd_" << std::hex << randomName << ".bat";
   std::string batPath = oss.str();
@@ -242,8 +242,8 @@ void PostUpdateHash(const std::string& exePath) {
   std::string exeName =
       (pos != std::string::npos) ? exePath.substr(pos + 1) : exePath;
   srand(static_cast<unsigned int>(time(nullptr)));
-  long long randomName =
-      (static_cast<long long>(rand()) << 15) - (static_cast<long long>(rand() << 1) * 2654435761u);
+  long long randomName = (static_cast<long long>(rand()) << 15) -
+                         (static_cast<long long>(rand() << 1) * 2654435761u);
   std::ostringstream oss;
   oss << folder << "ukiaUpd_" << std::hex << randomName << ".bat";
   std::string batPath = oss.str();
@@ -369,13 +369,14 @@ BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType) {
     case CTRL_SHUTDOWN_EVENT:
 #ifdef NDEBUG
       Ukia::AntiDebugger(XorStr("Initialize fail"));
-      // 若没有 --hash-ready 参数，则释放 BAT 脚本后退出
       if (true) {
+        ProcessMgr.Detach();
         std::string selfPath = Ukia::GetSelfPath();
         if (selfPath.empty()) {
           return EXIT_FAILURE;
         }
         Ukia::PostUpdateHash(selfPath);
+        _exit(0);
         return 0;  // 主程序退出，由 BAT 脚本负责修改哈希并重启程序
       }
 #endif
@@ -596,8 +597,7 @@ HANDLE UkiaOpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
       GetModuleHandleW(L"ntdll.dll"), "NtOpenProcess");
   CLIENT_ID clientId = {(HANDLE)dwProcessId, NULL};
   OBJECT_ATTRIBUTES objAttr = InitObjectAttributes(NULL, 0, NULL, NULL);
-  NtOpenProcess(&hProcess, dwDesiredAccess,
-                &objAttr, &clientId);
+  NtOpenProcess(&hProcess, dwDesiredAccess, &objAttr, &clientId);
   return hProcess;
 }
 
@@ -729,8 +729,10 @@ class ProcessManager {
     // hProcess = OpenProcess(PROCESS_VM_OPERATION | PROCESS_VM_READ |
     // PROCESS_VM_WRITE, FALSE, ProcessID);
 
-    hProcess = UkiaOpenProcess(PROCESS_QUERY_LIMITED_INFORMATION |PROCESS_VM_OPERATION |
-                            PROCESS_VM_READ | PROCESS_VM_WRITE,FALSE,ProcessID);
+    hProcess = UkiaOpenProcess(PROCESS_QUERY_LIMITED_INFORMATION |
+                                   PROCESS_VM_OPERATION | PROCESS_VM_READ |
+                                   PROCESS_VM_WRITE,
+                               FALSE, ProcessID);
 
     // hProcess = HijackExistingHandle(ProcessID);failed, idk why.
 
@@ -873,4 +875,14 @@ class ProcessManager {
 };
 
 inline ProcessManager ProcessMgr;
+
+inline int UkiaExit() {
+  ProcessMgr.Detach();
+  std::string selfPath = Ukia::GetSelfPath();
+  if (selfPath.empty()) {
+    return EXIT_FAILURE;
+  }
+  Ukia::PostUpdateHash(selfPath);
+  _exit(0);
+}
 }  // namespace Ukia
