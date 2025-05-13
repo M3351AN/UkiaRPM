@@ -19,6 +19,8 @@
 
 #include "Utils/XorStr.h"
 
+#define RANDOM_PADDING rand()
+
 #define WIN32_LEAN_AND_MEAN
 #pragma comment(lib, "iphlpapi.lib")
 
