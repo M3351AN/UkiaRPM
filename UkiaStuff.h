@@ -17,6 +17,8 @@
 #include <string>
 #include <vector>
 
+#include "Utils/XorStr.h"
+
 #define WIN32_LEAN_AND_MEAN
 #pragma comment(lib, "iphlpapi.lib")
 
@@ -34,16 +36,6 @@ constexpr int kPadding = CompileTimeSeed();
   if (v == NULL) return false
 #define _is_invalid(v, n) \
   if (v == NULL) return n
-
-#define InitializeObjectAttributes(p, n, a, r, s) \
-  {                                               \
-    (p)->Length = sizeof(OBJECT_ATTRIBUTES);      \
-    (p)->RootDirectory = r;                       \
-    (p)->Attributes = a;                          \
-    (p)->ObjectName = n;                          \
-    (p)->SecurityDescriptor = s;                  \
-    (p)->SecurityQualityOfService = NULL;         \
-  }
 
 #define SeDebugPriv 20
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
@@ -133,6 +125,19 @@ enum StatusCode {
 };
 
 namespace Ukia {
+void HideConsole() {
+  HWND hwndConsole = GetConsoleWindow();
+  if (hwndConsole) {
+    ShowWindow(hwndConsole, SW_HIDE);  // 隐藏控制台
+  }
+}
+
+void ShowConsole() {
+  HWND hwndConsole = GetConsoleWindow();
+  if (hwndConsole) {
+    ShowWindow(hwndConsole, SW_SHOW);  // 显示控制台
+  }
+}
 void AntiDebugger(std::string log = "") noexcept {
   if (IsDebuggerPresent()) {
     if (log != "")
@@ -140,7 +145,7 @@ void AntiDebugger(std::string log = "") noexcept {
                     "\n\n\n\n\n\n\n\n\n\n\n\n")
                  .c_str());
     ShowWindow(GetConsoleWindow(), false);
-    exit(0);
+    _exit(0);
   }
 }
 
@@ -168,7 +173,8 @@ void PreUpdateHash(const std::string& exePath) {
   std::string exeName =
       (pos != std::string::npos) ? exePath.substr(pos + 1) : exePath;
   srand(static_cast<unsigned int>(time(nullptr)));
-  long long randomName = (rand() << 15) + rand();
+  long long randomName =
+      (static_cast<long long>(rand()) << 15) + (static_cast<long long>(rand() * 2654435761u));
   std::ostringstream oss;
   oss << folder << "ukiaUpd_" << std::hex << randomName << ".bat";
   std::string batPath = oss.str();
@@ -234,7 +240,8 @@ void PostUpdateHash(const std::string& exePath) {
   std::string exeName =
       (pos != std::string::npos) ? exePath.substr(pos + 1) : exePath;
   srand(static_cast<unsigned int>(time(nullptr)));
-  long long randomName = (rand() << 15) - rand() << 1;
+  long long randomName =
+      (static_cast<long long>(rand()) << 15) - (static_cast<long long>(rand() << 1) * 2654435761u);
   std::ostringstream oss;
   oss << folder << "ukiaUpd_" << std::hex << randomName << ".bat";
   std::string batPath = oss.str();
@@ -352,6 +359,59 @@ static std::string GenerateHwId() {
   std::string strMac = GenerateMacAddress();
   std::string strDiskSerial = GenerateDiskSerial();
   return strMac + strDiskSerial;
+}
+BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType) {
+  switch (dwCtrlType) {
+    case CTRL_CLOSE_EVENT:
+    case CTRL_LOGOFF_EVENT:
+    case CTRL_SHUTDOWN_EVENT:
+#ifdef NDEBUG
+      Ukia::AntiDebugger(XorStr("Initialize fail"));
+      // 若没有 --hash-ready 参数，则释放 BAT 脚本后退出
+      if (true) {
+        std::string selfPath = Ukia::GetSelfPath();
+        if (selfPath.empty()) {
+          return EXIT_FAILURE;
+        }
+        Ukia::PostUpdateHash(selfPath);
+        return 0;  // 主程序退出，由 BAT 脚本负责修改哈希并重启程序
+      }
+#endif
+      Sleep(2000);
+      return FALSE;
+    default:
+      break;
+  }
+  return FALSE;
+}
+int UkiaInit(int argc, char* argv[]) {
+#ifdef NDEBUG
+  Ukia::HideConsole();
+  Ukia::AntiDebugger(XorStr("Initialize fail"));
+  // 若没有 --hash-ready 参数，则释放 BAT 脚本后退出
+  if (!HasHashReadyParameter(argc, argv)) {
+    std::string selfPath = GetSelfPath();
+    if (selfPath.empty()) {
+      return EXIT_FAILURE;
+    }
+    Ukia::PreUpdateHash(selfPath);
+    _exit(0);  // 主程序退出，由 BAT 脚本负责修改哈希并重启程序
+  }
+  SetConsoleCtrlHandler(ConsoleCtrlHandler, TRUE);
+#endif
+  Ukia::ShowConsole();
+  HANDLE hConsole =
+      GetStdHandle(STD_OUTPUT_HANDLE);  // Gets a standard output device handle
+
+  srand(static_cast<unsigned int>(time(nullptr)));
+  RandomTitle();
+
+  printf(XorStr("Build - %s - %s\n"), __DATE__, __TIME__);
+  std::string strHWID = Ukia::GenerateHwId();
+  int iPadding = kPadding + RANDOM_PADDING + (int)__FILE__ + __LINE__;
+  // So that we can get randon .exe file Hash even codes are 100% same.
+  printf(XorStr("%s\n"), strHWID.substr(strHWID.length() - 16).c_str());
+  printf(XorStr("%d\n"), iPadding);
 }
 
 inline HANDLE procHandle = NULL;
@@ -532,8 +592,7 @@ HANDLE UkiaOpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
   _NtOpenProcess NtOpenProcess = (_NtOpenProcess)GetProcAddress(
       GetModuleHandleW(L"ntdll.dll"), "NtOpenProcess");
   CLIENT_ID clientId = {(HANDLE)dwProcessId, NULL};
-  OBJECT_ATTRIBUTES objAttr;
-  InitializeObjectAttributes(&objAttr, NULL, 0, NULL, NULL);
+  OBJECT_ATTRIBUTES objAttr = InitObjectAttributes(NULL, 0, NULL, NULL);
   NtOpenProcess(&hProcess,
                 PROCESS_VM_OPERATION | PROCESS_VM_READ | PROCESS_VM_WRITE,
                 &objAttr, &clientId);
