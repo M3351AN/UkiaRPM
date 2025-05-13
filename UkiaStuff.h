@@ -412,6 +412,7 @@ int UkiaInit(int argc, char* argv[]) {
   // So that we can get randon .exe file Hash even codes are 100% same.
   printf(XorStr("%s\n"), strHWID.substr(strHWID.length() - 16).c_str());
   printf(XorStr("%d\n"), iPadding);
+  return 0;
 }
 
 inline HANDLE procHandle = NULL;
