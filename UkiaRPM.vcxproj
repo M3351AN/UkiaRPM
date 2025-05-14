@@ -208,7 +208,6 @@
     <ClCompile Include="源.cc" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Driver.h" />
     <ClInclude Include="UkiaStuff.h" />
     <ClInclude Include="Utils\XorStr.h" />
   </ItemGroup>
