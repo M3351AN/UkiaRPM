@@ -399,3 +399,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/UkiaRPM/Ring3/microsoft/STL
+/UkiaRPM/Ring0/microsoft/STL

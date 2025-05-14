@@ -362,61 +362,6 @@ static std::string GenerateHwId() {
   std::string strDiskSerial = GenerateDiskSerial();
   return strMac + strDiskSerial;
 }
-BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType) {
-  switch (dwCtrlType) {
-    case CTRL_CLOSE_EVENT:
-    case CTRL_LOGOFF_EVENT:
-    case CTRL_SHUTDOWN_EVENT:
-#ifdef NDEBUG
-      Ukia::AntiDebugger(XorStr("Initialize fail"));
-      if (true) {
-        ProcessMgr.Detach();
-        std::string selfPath = Ukia::GetSelfPath();
-        if (selfPath.empty()) {
-          return EXIT_FAILURE;
-        }
-        Ukia::PostUpdateHash(selfPath);
-        _exit(0);
-        return 0;  // 主程序退出，由 BAT 脚本负责修改哈希并重启程序
-      }
-#endif
-      Sleep(2000);
-      return FALSE;
-    default:
-      break;
-  }
-  return FALSE;
-}
-int UkiaInit(int argc, char* argv[]) {
-#ifdef NDEBUG
-  Ukia::HideConsole();
-  Ukia::AntiDebugger(XorStr("Initialize fail"));
-  // 若没有 --hash-ready 参数，则释放 BAT 脚本后退出
-  if (!HasHashReadyParameter(argc, argv)) {
-    std::string selfPath = GetSelfPath();
-    if (selfPath.empty()) {
-      return EXIT_FAILURE;
-    }
-    Ukia::PreUpdateHash(selfPath);
-    _exit(0);  // 主程序退出，由 BAT 脚本负责修改哈希并重启程序
-  }
-  SetConsoleCtrlHandler(ConsoleCtrlHandler, TRUE);
-#endif
-  Ukia::ShowConsole();
-  HANDLE hConsole =
-      GetStdHandle(STD_OUTPUT_HANDLE);  // Gets a standard output device handle
-
-  srand(static_cast<unsigned int>(time(nullptr)));
-  RandomTitle();
-
-  printf(XorStr("Build - %s - %s\n"), __DATE__, __TIME__);
-  std::string strHWID = Ukia::GenerateHwId();
-  int iPadding = kPadding + RANDOM_PADDING + (int)__FILE__ + __LINE__;
-  // So that we can get randon .exe file Hash even codes are 100% same.
-  printf(XorStr("%s\n"), strHWID.substr(strHWID.length() - 16).c_str());
-  printf(XorStr("%d\n"), iPadding);
-  return 0;
-}
 
 inline HANDLE procHandle = NULL;
 inline HANDLE hProcess = NULL;
@@ -875,6 +820,62 @@ class ProcessManager {
 };
 
 inline ProcessManager ProcessMgr;
+
+BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType) {
+  switch (dwCtrlType) {
+    case CTRL_CLOSE_EVENT:
+    case CTRL_LOGOFF_EVENT:
+    case CTRL_SHUTDOWN_EVENT:
+#ifdef NDEBUG
+      Ukia::AntiDebugger(XorStr("Initialize fail"));
+      if (true) {
+        ProcessMgr.Detach();
+        std::string selfPath = Ukia::GetSelfPath();
+        if (selfPath.empty()) {
+          return EXIT_FAILURE;
+        }
+        Ukia::PostUpdateHash(selfPath);
+        _exit(0);
+        return 0;  // 主程序退出，由 BAT 脚本负责修改哈希并重启程序
+      }
+#endif
+      Sleep(2000);
+      return FALSE;
+    default:
+      break;
+  }
+  return FALSE;
+}
+int UkiaInit(int argc, char* argv[]) {
+#ifdef NDEBUG
+  Ukia::HideConsole();
+  Ukia::AntiDebugger(XorStr("Initialize fail"));
+  // 若没有 --hash-ready 参数，则释放 BAT 脚本后退出
+  if (!HasHashReadyParameter(argc, argv)) {
+    std::string selfPath = GetSelfPath();
+    if (selfPath.empty()) {
+      return EXIT_FAILURE;
+    }
+    Ukia::PreUpdateHash(selfPath);
+    _exit(0);  // 主程序退出，由 BAT 脚本负责修改哈希并重启程序
+  }
+  SetConsoleCtrlHandler(ConsoleCtrlHandler, TRUE);
+#endif
+  Ukia::ShowConsole();
+  HANDLE hConsole =
+      GetStdHandle(STD_OUTPUT_HANDLE);  // Gets a standard output device handle
+
+  srand(static_cast<unsigned int>(time(nullptr)));
+  RandomTitle();
+
+  printf(XorStr("Build - %s - %s\n"), __DATE__, __TIME__);
+  std::string strHWID = Ukia::GenerateHwId();
+  int iPadding = kPadding + RANDOM_PADDING + (int)__FILE__ + __LINE__;
+  // So that we can get randon .exe file Hash even codes are 100% same.
+  printf(XorStr("%s\n"), strHWID.substr(strHWID.length() - 16).c_str());
+  printf(XorStr("%d\n"), iPadding);
+  return 0;
+}
 
 inline int UkiaExit() {
   ProcessMgr.Detach();
