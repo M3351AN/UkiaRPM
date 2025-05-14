@@ -1,0 +1,223 @@
+#pragma once
+#include "UkiaStuff.h"
+#include "Utils/XorStr.h"
+struct Vector2 {
+  float x, y;
+};
+struct Vector3 {
+  float x, y, z;
+};
+
+class ViewMatrix {
+ private:
+  float matrix[4][4];
+
+ public:
+  std::chrono::steady_clock::time_point last_update;
+  Vector2 screen_size;
+  Vector2 screen_center;
+
+  ViewMatrix() : last_update(std::chrono::steady_clock::now()) {
+    screen_size = {0, 0};
+  }
+
+  float* operator[](int index) { return matrix[index]; }
+
+  void SetScreenData(Vector2 screenSize) {
+    screen_size = screenSize;
+    screen_center = {screen_size.x / 2.f, screen_size.y / 2.f};
+  }
+
+  bool NeedUpdate() const {
+    return std::chrono::steady_clock::now() - last_update >
+           std::chrono::milliseconds(15);
+  }
+
+  void Update(uintptr_t engineAddress) {
+    uintptr_t viewMatrixPtr;
+    Ukia::ProcessMgr.ReadMemory(engineAddress + 0x00698F18, viewMatrixPtr);
+    Ukia::ProcessMgr.ReadMemory(viewMatrixPtr + 0x2D4, matrix);
+    last_update = std::chrono::steady_clock::now();
+  }
+
+  bool WorldToScreen(Vector3 position, Vector2& out_position) {
+    out_position.x = matrix[0][0] * position.x + matrix[0][1] * position.y +
+                     matrix[0][2] * position.z + matrix[0][3];
+    out_position.y = matrix[1][0] * position.x + matrix[1][1] * position.y +
+                     matrix[1][2] * position.z + matrix[1][3];
+
+    float w = matrix[3][0] * position.x + matrix[3][1] * position.y +
+              matrix[3][2] * position.z + matrix[3][3];
+
+    if (w < 0.01f) return false;
+
+    float inv_w = 1.f / w;
+    out_position.x *= inv_w;
+    out_position.y *= inv_w;
+
+    float x = screen_size.x * .5f;
+    float y = screen_size.y * .5f;
+
+    x += 0.5f * out_position.x * screen_size.x + 0.5f;
+    y -= 0.5f * out_position.y * screen_size.y + 0.5f;
+
+    out_position.x = x;
+    out_position.y = y;
+    return true;
+  }
+};
+
+#pragma pack(push, 1)
+struct BaseEntityData {
+  char _pad1[0xCF];
+  uint8_t life_state;
+  int health;
+  char _pad2[0xD8 - 0xD4];
+  int team;
+  char _pad3[0x144 - 0xDC];
+  float head_height;
+  Vector3 velocity;
+  char _pad4[0x1F4 - 0x154];
+  int movetype;
+  char _pad5[0x1FA - 0x1F8];
+  bool dormant;
+  char _pad6[0x320 - 0x1FB];
+  Vector3 position;
+};
+
+struct EntityData : public BaseEntityData {};
+struct LocalData : public BaseEntityData {
+  char _pad7[0x440 - 0x32C];
+  int flags;
+  char _pad8[0x1570 - 0x444];
+  int fovend;
+  int fov;
+  char _pad9[0x1584 - 0x1578];
+  int crosshair_entity_id;
+};
+#pragma pack(pop)
+
+namespace Memory {
+uintptr_t clientAddress, engineAddress;
+std::chrono::steady_clock::time_point last_address_update;
+
+bool UpdateAddress() {
+  auto now = std::chrono::steady_clock::now();
+  if (now - last_address_update < std::chrono::seconds(1)) {
+    return true;
+  }
+
+  clientAddress = reinterpret_cast<uintptr_t>(
+      Ukia::ProcessMgr.GetProcessModuleHandle(XorStr("client.dll")));
+
+  engineAddress = reinterpret_cast<uintptr_t>(
+      Ukia::ProcessMgr.GetProcessModuleHandle(XorStr("engine.dll")));
+  last_address_update = now;
+  return true;
+}
+};  // namespace Memory
+
+class Entity {
+ public:
+  uintptr_t address;
+  EntityData data;
+  int index;
+  std::chrono::steady_clock::time_point last_full_update;
+
+  Entity() : address(0), index(-1), last_full_update() {}
+  Entity(uintptr_t addr, int idx)
+      : address(addr), index(idx), last_full_update() {}
+
+  void RefreshCriticalData() {
+    // call once for 1 block in in 5 periods or call twice for 10 blocks in a
+    // period i think call twice for 1 block in a period and then call once for
+    // 10 blocks in 5 periods better.
+    if (address != 0) {
+      constexpr uintptr_t position_offset = offsetof(EntityData, position);
+      Ukia::ProcessMgr.ReadMemory(address + position_offset, data.position);
+    }
+  }
+
+  void RefreshFullData() {
+    if (address != 0) {
+      memset(&data, 0, sizeof(data));  // really refresh
+      Ukia::ProcessMgr.ReadMemory(address, data);
+      last_full_update = std::chrono::steady_clock::now();
+    }
+  }
+
+  bool IsValid() const {
+    return address != 0 && data.health > 0 && data.health < 250 &&
+           data.life_state == 0;
+  }
+
+  bool IsEnemy(int local_team) const { return data.team != local_team; }
+
+  float DistanceTo(const Vector3& other) const {
+    return std::sqrt(std::pow(data.position.x - other.x, 2) +
+                     std::pow(data.position.y - other.y, 2) +
+                     std::pow(data.position.z - other.z, 2));
+  }
+};
+
+class EntityList {
+ public:
+  static constexpr int MAX_ENTITIES = 64;
+
+  LocalData local_player_data;
+  uintptr_t local_player_address;
+  ViewMatrix view_matrix;
+
+  // Ë«»º³å½á¹¹
+  struct EntityBuffer {
+    std::array<Entity, MAX_ENTITIES> entities;
+    std::array<uintptr_t, MAX_ENTITIES> address_cache;
+    std::chrono::steady_clock::time_point update_time;
+  };
+
+  EntityBuffer front_buffer, back_buffer;
+  mutable std::mutex buffer_mtx;
+
+  EntityList() {
+    front_buffer.entities.fill(Entity());
+    back_buffer.entities.fill(Entity());
+  }
+
+  void UpdateAll() {
+    std::lock_guard<std::mutex> lock(buffer_mtx);
+
+    constexpr uintptr_t ENTITY_LIST_OFFSET = 0x6098C8;
+    Ukia::ProcessMgr.ReadMemory(Memory::clientAddress + ENTITY_LIST_OFFSET,
+                                back_buffer.address_cache,
+                                MAX_ENTITIES * sizeof(uintptr_t));
+
+    Ukia::ProcessMgr.ReadMemory(Memory::clientAddress + 0x5F4B68,
+                                local_player_address);
+    Ukia::ProcessMgr.ReadMemory(local_player_address, local_player_data);
+
+    std::for_each(
+        std::execution::par_unseq, back_buffer.entities.begin(),
+        back_buffer.entities.end(), [&](Entity& ent) {
+          const int i = &ent - &back_buffer.entities[0];
+          ent.address = back_buffer.address_cache[i];
+          ent.index = i;
+
+          if (ent.last_full_update.time_since_epoch().count() == 0 ||
+              std::chrono::steady_clock::now() - ent.last_full_update >
+                  std::chrono::milliseconds(250)) {
+            ent.RefreshFullData();
+          } else {
+            ent.RefreshCriticalData();
+          }
+        });
+
+    if (view_matrix.NeedUpdate()) {
+      view_matrix.Update(Memory::engineAddress);
+    }
+    view_matrix.SetScreenData({1360.0f, 768.0f});
+    back_buffer.update_time = std::chrono::steady_clock::now();
+    std::swap(front_buffer, back_buffer);
+  }
+
+  const auto& GetCurrentEntities() const { return front_buffer.entities; }
+};

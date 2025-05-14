@@ -208,6 +208,8 @@
     <ClCompile Include="源.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CSSx64.h" />
+    <ClInclude Include="Func.h" />
     <ClInclude Include="UkiaStuff.h" />
     <ClInclude Include="Utils\XorStr.h" />
   </ItemGroup>

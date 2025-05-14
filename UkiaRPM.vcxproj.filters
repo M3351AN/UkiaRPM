@@ -29,5 +29,11 @@
     <ClInclude Include="Utils\XorStr.h">
       <Filter>头文件\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="CSSx64.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Func.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

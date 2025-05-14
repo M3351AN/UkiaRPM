@@ -675,8 +675,9 @@ class ProcessManager {
     // PROCESS_VM_WRITE, FALSE, ProcessID);
 
     hProcess = UkiaOpenProcess(PROCESS_QUERY_LIMITED_INFORMATION |
-                                   PROCESS_VM_OPERATION | PROCESS_VM_READ |
-                                   PROCESS_VM_WRITE,
+                                   PROCESS_VM_OPERATION | PROCESS_VM_READ
+                               // | PROCESS_VM_WRITE
+                               ,
                                FALSE, ProcessID);
 
     // hProcess = HijackExistingHandle(ProcessID);failed, idk why.
