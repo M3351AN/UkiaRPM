@@ -18,6 +18,7 @@ typedef struct {
   DWORD A;
 } RGBA;
 RGBA White = {255, 255, 255, 255};
+RGBA Grey = {155, 155, 155, 255};
 struct Vector2 {
   float x, y;
 };

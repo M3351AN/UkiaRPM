@@ -218,11 +218,15 @@ void ESPRun(EntityList& entity_list) {
         entity_list.view_matrix.WorldToScreen(ent.data.position, screen_pos);
     if (on_screen) {
       std::ostringstream playerInfo;
-      playerInfo << "^ a dude\n"//maybe name?
+      playerInfo << "^ a dude\n"  // maybe name?
                  << "Health: " << ent.data.health << "\n"
                  << "Dist:" << dist << "\n";
-
-      DrawNewText(screen_pos.x, screen_pos.y, &White, playerInfo.str().c_str());
+      if (ent.data.dormant)
+        DrawNewText(screen_pos.x, screen_pos.y, &Grey,
+                    playerInfo.str().c_str());
+      else
+        DrawNewText(screen_pos.x, screen_pos.y, &White,
+                    playerInfo.str().c_str());
     }
   }
   return;
