@@ -96,38 +96,34 @@ struct BaseEntityData {
   int movetype;
   char _pad5[0x1FA - 0x1F8];
   bool dormant;
-  char _pad6[0x320 - 0x1FB];
+  char _pad6[0x314 - 0x1FB];
+  Vector3 viewangles;
   Vector3 position;
 };
 
 struct EntityData : public BaseEntityData {};
 struct LocalData : public BaseEntityData {
-  char _pad7[0x440 - 0x32C];
+  char _pad7[0x398 - 0x32C];
+  Vector2 viewangles1;
+  char _pad8[0x440 - 0x3A0];
   int flags;
-  char _pad8[0x1570 - 0x444];
+  char _pad9[0x1570 - 0x444];
   int fovend;
   int fov;
-  char _pad9[0x1584 - 0x1578];
+  char _pad10[0x1584 - 0x1578];
   int crosshair_entity_id;
 };
 #pragma pack(pop)
 
 namespace Memory {
-uintptr_t clientAddress, engineAddress;
-std::chrono::steady_clock::time_point last_address_update;
+uintptr_t clientAddress, engineAddress, nameListBase;
 
 bool UpdateAddress() {
-  auto now = std::chrono::steady_clock::now();
-  if (now - last_address_update < std::chrono::seconds(1)) {
-    return true;
-  }
-
   clientAddress = reinterpret_cast<uintptr_t>(
       Ukia::ProcessMgr.GetProcessModuleHandle(XorStr("client.dll")));
 
   engineAddress = reinterpret_cast<uintptr_t>(
       Ukia::ProcessMgr.GetProcessModuleHandle(XorStr("engine.dll")));
-  last_address_update = now;
   return true;
 }
 };  // namespace Memory
@@ -136,6 +132,7 @@ class Entity {
  public:
   uintptr_t address;
   EntityData data;
+  std::string name;
   int index;
   std::chrono::steady_clock::time_point last_full_update;
 
@@ -155,8 +152,15 @@ class Entity {
 
   void RefreshFullData() {
     if (address != 0) {
-      memset(&data, 0, sizeof(data));  // really refresh
+      memset(&data, 0, sizeof(data));
       Ukia::ProcessMgr.ReadMemory(address, data);
+
+      uintptr_t nameAddr;
+      Ukia::ProcessMgr.ReadMemory(
+          Memory::nameListBase + 0x798 + (index * 0x2),
+          nameAddr);
+      name = Ukia::ProcessMgr.ReadString(nameAddr);
+
       last_full_update = std::chrono::steady_clock::now();
     }
   }
@@ -201,14 +205,18 @@ class EntityList {
   void UpdateAll() {
     std::lock_guard<std::mutex> lock(buffer_mtx);
 
-    constexpr uintptr_t ENTITY_LIST_OFFSET = 0x6098C8;
-    Ukia::ProcessMgr.ReadMemory(Memory::clientAddress + ENTITY_LIST_OFFSET,
+    constexpr uintptr_t kEntityListOffset = 0x6098C8;
+    constexpr uintptr_t kLocalPlayerOffset = 0x5F4B68;
+    constexpr uintptr_t kNameListOffset = 0x609D68;
+    Ukia::ProcessMgr.ReadMemory(Memory::clientAddress + kEntityListOffset,
                                 back_buffer.address_cache,
                                 MAX_ENTITIES * sizeof(uintptr_t));
 
-    Ukia::ProcessMgr.ReadMemory(Memory::clientAddress + 0x5F4B68,
+    Ukia::ProcessMgr.ReadMemory(Memory::clientAddress + kLocalPlayerOffset,
                                 local_player_address);
     Ukia::ProcessMgr.ReadMemory(local_player_address, local_player_data);
+    Ukia::ProcessMgr.ReadMemory(Memory::clientAddress + kNameListOffset,
+                                Memory::nameListBase);
 
     std::for_each(
         std::execution::par_unseq, back_buffer.entities.begin(),

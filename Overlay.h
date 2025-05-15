@@ -25,7 +25,32 @@ struct Vector2 {
 
 struct Vector3 {
   float x, y, z;
+
+  // 构造函数
+  Vector3() : x(0), y(0), z(0) {}
+  Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
+
+  // 计算向量长度
+  float Length() const { return std::sqrt(x * x + y * y + z * z); }
+
+  // 归一化向量（原地修改）
+  void Normalize() {
+    float len = Length();
+    if (len != 0) {
+      x /= len;
+      y /= len;
+      z /= len;
+    }
+  }
+
+  // 返回归一化后的新向量（不修改原向量）
+  Vector3 Normalized() const {
+    Vector3 result = *this;
+    result.Normalize();
+    return result;
+  }
 };
+
 std::string string_To_UTF8(const std::string& str) {
   int nwLen = ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, NULL, 0);
   wchar_t* pwBuf = new wchar_t[nwLen + 1];
