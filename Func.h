@@ -212,14 +212,17 @@ void ESPRun(EntityList& entity_list) {
   for (const auto& ent : entity_list.GetCurrentEntities()) {
     if (!ent.IsValid()) continue;
     if (!ent.IsEnemy(local_team)) continue;
-
-    Vector3 head_pos = {ent.data.position.x, ent.data.position.y,
-                        ent.data.position.z + ent.data.head_height};
+    float dist = ent.DistanceTo(local_pos);
     Vector2 screen_pos;
     bool on_screen =
-        entity_list.view_matrix.WorldToScreen(head_pos, screen_pos);
+        entity_list.view_matrix.WorldToScreen(ent.data.position, screen_pos);
     if (on_screen) {
-      DrawNewText(screen_pos.x, screen_pos.y, &White, XorStr("a dude h3r3"));
+      std::ostringstream playerInfo;
+      playerInfo << "^ a dude\n"//maybe name?
+                 << "Health: " << ent.data.health << "\n"
+                 << "Dist:" << dist << "\n";
+
+      DrawNewText(screen_pos.x, screen_pos.y, &White, playerInfo.str().c_str());
     }
   }
   return;
