@@ -212,6 +212,7 @@
     <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="Utils\uiaccess.c" />
     <ClCompile Include="源.cc" />
   </ItemGroup>
   <ItemGroup>
@@ -227,6 +228,7 @@
     <ClInclude Include="ImGui\imstb_truetype.h" />
     <ClInclude Include="Overlay.h" />
     <ClInclude Include="UkiaStuff.h" />
+    <ClInclude Include="Utils\uiaccess.h" />
     <ClInclude Include="Utils\XorStr.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

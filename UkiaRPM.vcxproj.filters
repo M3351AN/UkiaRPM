@@ -45,6 +45,9 @@
     <ClCompile Include="ImGui\imgui_widgets.cpp">
       <Filter>源文件\ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Utils\uiaccess.c">
+      <Filter>头文件\Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UkiaStuff.h">
@@ -85,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="Overlay.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\uiaccess.h">
+      <Filter>头文件\Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
