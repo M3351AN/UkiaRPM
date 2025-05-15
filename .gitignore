@@ -401,3 +401,4 @@ FodyWeavers.xsd
 *.sln.iml
 /UkiaRPM/Ring3/microsoft/STL
 /UkiaRPM/Ring0/microsoft/STL
+imgui.ini
