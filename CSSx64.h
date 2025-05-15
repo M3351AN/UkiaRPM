@@ -1,13 +1,28 @@
 #pragma once
+#include <Uxtheme.h>
+#include <d3d9.h>
+#include <dwmapi.h>
+
+#include "Overlay.h"
 #include "UkiaStuff.h"
 #include "Utils/XorStr.h"
-struct Vector2 {
-  float x, y;
-};
-struct Vector3 {
-  float x, y, z;
-};
 
+#pragma comment(lib, "d3d9.lib")
+#pragma comment(lib, "dwmapi.lib")
+
+namespace global {
+DWORD processId;
+inline HDC hdcBuffer = NULL;
+inline HBITMAP hbmBuffer = NULL;
+
+RECT gameBounds;
+HWND hwnd_;
+
+Vector2 screenSize;
+Vector2 screenPos;
+
+std::string infos;
+}  // namespace global
 class ViewMatrix {
  private:
   float matrix[4][4];
@@ -30,7 +45,7 @@ class ViewMatrix {
 
   bool NeedUpdate() const {
     return std::chrono::steady_clock::now() - last_update >
-           std::chrono::milliseconds(15);
+           std::chrono::milliseconds(2);
   }
 
   void Update(uintptr_t engineAddress) {
@@ -204,7 +219,7 @@ class EntityList {
 
           if (ent.last_full_update.time_since_epoch().count() == 0 ||
               std::chrono::steady_clock::now() - ent.last_full_update >
-                  std::chrono::milliseconds(250)) {
+                  std::chrono::milliseconds(50)) {
             ent.RefreshFullData();
           } else {
             ent.RefreshCriticalData();
@@ -214,10 +229,26 @@ class EntityList {
     if (view_matrix.NeedUpdate()) {
       view_matrix.Update(Memory::engineAddress);
     }
-    view_matrix.SetScreenData({1360.0f, 768.0f});
+    view_matrix.SetScreenData(global::screenSize);
     back_buffer.update_time = std::chrono::steady_clock::now();
     std::swap(front_buffer, back_buffer);
   }
 
   const auto& GetCurrentEntities() const { return front_buffer.entities; }
 };
+
+EntityList entity_list;
+
+namespace DirectX9Interface {
+IDirect3D9Ex* Direct3D9 = NULL;
+IDirect3DDevice9Ex* pDevice = NULL;
+D3DPRESENT_PARAMETERS pParams = {NULL};
+MARGINS Margin = {-1};
+MSG Message = {NULL};
+}  // namespace DirectX9Interface
+
+namespace OverlayWindow {
+WNDCLASSEXA WindowClass;
+HWND Hwnd;
+LPCSTR Name;
+}  // namespace OverlayWindow

@@ -701,7 +701,22 @@ class ProcessManager {
     ModuleAddress = 0;
     attached_ = false;
   }
-
+  HWND GetWindowHandleFromProcessId(DWORD ProcessId) {
+    HWND hwnd = NULL;
+    do {
+      hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
+      DWORD pid = 0;
+      GetWindowThreadProcessId(hwnd, &pid);
+      if (pid == ProcessId) {
+        TCHAR windowTitle[MAX_PATH];
+        GetWindowText(hwnd, windowTitle, MAX_PATH);
+        if (IsWindowVisible(hwnd) && windowTitle[0] != '\0') {
+          return hwnd;
+        }
+      }
+    } while (hwnd != NULL);
+    return NULL;  // No main window found for the given process ID
+  }
   bool IsActive() {
     if (!attached_) return false;
     DWORD ExitCode{};
@@ -868,13 +883,14 @@ int UkiaInit(int argc, char* argv[]) {
 
   srand(static_cast<unsigned int>(time(nullptr)));
   RandomTitle();
-
-  printf(XorStr("Build - %s - %s\n"), __DATE__, __TIME__);
-  std::string strHWID = Ukia::GenerateHwId();
   int iPadding = kPadding + RANDOM_PADDING + (int)__FILE__ + __LINE__;
   // So that we can get randon .exe file Hash even codes are 100% same.
-  printf(XorStr("%s\n"), strHWID.substr(strHWID.length() - 16).c_str());
   printf(XorStr("%d\n"), iPadding);
+  system("cls");
+  printf(XorStr("Build - %s - %s\n"), __DATE__, __TIME__);
+  std::string strHWID = Ukia::GenerateHwId();
+  printf(XorStr("%s\n"), strHWID.substr(strHWID.length() - 16).c_str());
+
   return 0;
 }
 
