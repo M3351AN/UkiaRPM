@@ -315,6 +315,17 @@ void RandomTitle() noexcept {
 
   SetConsoleTitle(title);
 }
+
+bool IsFullscreen(HWND hwnd) {
+  RECT windowRect, screenRect;
+  GetWindowRect(hwnd, &windowRect);
+  GetWindowRect(GetDesktopWindow(), &screenRect);
+  return (windowRect.left <= screenRect.left &&
+          windowRect.top <= screenRect.top &&
+          windowRect.right >= screenRect.right &&
+          windowRect.bottom >= screenRect.bottom);
+}
+
 std::string GenerateMacAddress() noexcept {
   IP_ADAPTER_INFO AdapterInfo[16];
   DWORD dwBufLen = sizeof(AdapterInfo);
@@ -717,6 +728,7 @@ class ProcessManager {
     } while (hwnd != NULL);
     return NULL;  // No main window found for the given process ID
   }
+
   bool IsActive() {
     if (!attached_) return false;
     DWORD ExitCode{};
