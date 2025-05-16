@@ -11,6 +11,9 @@
 #pragma comment(lib, "dwmapi.lib")
 
 namespace global {
+std::atomic<bool> isRunning(true);
+
+DWORD uiAccessStatus;
 DWORD processId;
 inline HDC hdcBuffer = NULL;
 inline HBITMAP hbmBuffer = NULL;

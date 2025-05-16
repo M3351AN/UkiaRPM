@@ -59,6 +59,29 @@ void SoundThread() {
 }  // namespace Sonar
 
 namespace Func {
+void DrawMenu() {
+  ImGui::SetNextWindowSize(ImVec2(400.f, 200.f));
+
+  ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 10.0f);
+
+  ImGui::Begin(XorStr("UkiaCSS v1.0"), NULL,
+               ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+
+  ImGui::Spacing();
+  ImGui::Checkbox(XorStr("ESP"), &config::ESP);
+  ImGui::Checkbox(XorStr("PitchIndicator"), &config::PitchIndicator);
+  ImGui::Checkbox(XorStr("Sonar"), &config::Sonar);
+  ImGui::Checkbox(XorStr("Enemy info"), &config::InfoString);
+  ImGui::Separator();
+  if (ImGui::Button(XorStr("Unhook"))) {
+    global::isRunning = false;
+  }
+
+  ImGui::Text(XorStr("Menukey [DEL]"));
+  ImGui::PopStyleVar();
+  ImGui::End();
+}
+
 void FoundEnemy(EntityList& entityList) {
   if (!config::InfoString) return;
   std::lock_guard<std::mutex> lock(entityList.buffer_mtx);
@@ -279,5 +302,8 @@ void RenderFunctions(EntityList& entityList) {
   Func::ESPRun(entityList);
   Func::PitchIndicator(entityList);
   Func::SonarRun(entityList);
+  if (config::ShowMenu) Func::DrawMenu();
+  DrawNewText(10, 10, &White, XorStr("UkiaCSS"));
+  DrawNewText(10, 100, &White, global::infos.c_str());
 }
 void MemoryFunctions(EntityList& entityList) { Func::FoundEnemy(entityList); }
