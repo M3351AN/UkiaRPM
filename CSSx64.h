@@ -101,16 +101,40 @@ struct BaseEntityData {
   Vector3 position;
 };
 
-struct EntityData : public BaseEntityData {};
-struct LocalData : public BaseEntityData {
+struct EntityData : public BaseEntityData {
+  char _pad7[0x15DC - 0x32C];  // 0x32C-0x15DB
+  int m_iObserverMode;         // 0x15DC
+  int m_hObserverTarget;       // 0x15E0
+
+  char _pad8[0x1A10 - 0x15E4];   // 0x15E4-0x1A0F
+  int m_bIsDefusing;             // 0x1A10
+  char _pad9[0x1A34 - 0x1A14];   // 0x1A14-0x1A33
+  int m_iShotsFired;             // 0x1A34
+  char _pad10[0x1A54 - 0x1A38];  // 0x1A38-0x1A53
+  float m_flFlashMaxAlpha;       // 0x1A54
+  float m_flFlashDuration;       // 0x1A58
+
+  char _pad11[0x1A9C - 0x1A5C];  // 0x1A5C-0x1A9B
+  int m_bHasHelmet;              // 0x1A9C
+  char _pad12[0x1AA4 - 0x1AA0];  // 0x1AA0-0x1AA3
+  int m_ArmorValue;              // 0x1AA4
+  char _pad13[0x1AB4 - 0x1AA8];  // 0x1AA8-0x1AB3
+  int m_bHasDefuser;             // 0x1AB4
+};
+
+  struct LocalData : public BaseEntityData {
   char _pad7[0x398 - 0x32C];
   Vector2 viewangles1;
   char _pad8[0x440 - 0x3A0];
   int flags;
-  char _pad9[0x1570 - 0x444];
+  char _pad9[0x127C - 0x444];
+  Vector3 punchangle;
+  char _pad10[0x12D8 - 0x1288];
+  Vector3 punchangle_vel;
+  char _pad11[0x1570 - 0x12E4];
   int fovend;
   int fov;
-  char _pad10[0x1584 - 0x1578];
+  char _pad12[0x1584 - 0x1578];
   int crosshair_entity_id;
 };
 #pragma pack(pop)

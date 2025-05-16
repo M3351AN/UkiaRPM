@@ -269,7 +269,7 @@ void PitchIndicator() {
   RGBA lineColor = {0, 255, 0, 255};
   int lineLength = 15;
   int thickness = 1;
-
+  DrawNewText(centerX - 4, centerY, &lineColor, "^");
   DrawLine(centerX - lineLength, dynamicY, centerX + lineLength - 20, dynamicY,
            &lineColor, thickness);
   DrawLine(centerX - lineLength + 20, dynamicY, centerX + lineLength, dynamicY,
