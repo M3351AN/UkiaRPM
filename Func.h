@@ -82,8 +82,7 @@ void FoundEnemy(EntityList& entityList) {
                         ent.data.position.z + ent.data.head_height};
     float dist = ent.DistanceTo(local_pos);
     Vector2 screen_pos;
-    bool on_screen =
-        entityList.view_matrix.WorldToScreen(head_pos, screen_pos);
+    bool on_screen = entityList.view_matrix.WorldToScreen(head_pos, screen_pos);
     float center_dist_sq = FLT_MAX;
 
     if (on_screen) {
@@ -161,8 +160,7 @@ void SonarRun(EntityList& entityList) {
                         ent.data.position.z + ent.data.head_height};
     float dist = ent.DistanceTo(local_pos);
     Vector2 screen_pos;
-    bool on_screen =
-        entityList.view_matrix.WorldToScreen(head_pos, screen_pos);
+    bool on_screen = entityList.view_matrix.WorldToScreen(head_pos, screen_pos);
     float center_dist_sq = FLT_MAX;
 
     if (on_screen) {
@@ -229,8 +227,7 @@ void ESPRun(EntityList& entityList) {
       playerInfo << "^ " << ent.name << "\n"  // maybe name?
                  << "Health: " << ent.data.health << "\n"
                  << "Dist:" << dist << "\n";
-      if (ent.data.dormant)
-      {
+      if (ent.data.dormant) {
         DrawNewText(screen_pos.x, screen_pos.y, &Grey,
                     playerInfo.str().c_str());
         DrawNewText(head_screen_pos.x, head_screen_pos.y, &Grey, "v");
@@ -241,7 +238,6 @@ void ESPRun(EntityList& entityList) {
                     playerInfo.str().c_str());
         DrawNewText(head_screen_pos.x, head_screen_pos.y, &White, "v");
       }
-
     }
   }
   return;
@@ -275,7 +271,8 @@ void PitchIndicator(EntityList& entityList) {
            &lineColor, thickness);
   DrawLine(centerX - lineLength + 20, dynamicY, centerX + lineLength, dynamicY,
            &lineColor, thickness);
-  DrawNewText(centerX + lineLength + 5, dynamicY, &lineColor, std::to_string(pitch).c_str());
+  DrawNewText(centerX + lineLength + 5, dynamicY, &lineColor,
+              std::to_string(pitch).c_str());
 }
 }  // namespace Func
 void RenderFunctions(EntityList& entityList) {
@@ -283,6 +280,4 @@ void RenderFunctions(EntityList& entityList) {
   Func::PitchIndicator(entityList);
   Func::SonarRun(entityList);
 }
-void MemoryFunctions(EntityList& entityList) { 
-    Func::FoundEnemy(entityList); 
-}
+void MemoryFunctions(EntityList& entityList) { Func::FoundEnemy(entityList); }

@@ -406,12 +406,12 @@ inline bool IsHandleValid(
 
 inline HANDLE HijackExistingHandle(DWORD dwTargetProcessId) {
   HMODULE Ntdll =
-      GetModuleHandleA("ntdll");  // get the base address of ntdll.dll
+      GetModuleHandleA(XorStr("ntdll"));  // get the base address of ntdll.dll
 
   // get the address of RtlAdjustPrivilege in ntdll.dll so we can grant our
   // process the highest permission possible
   _RtlAdjustPrivilege RtlAdjustPrivilege =
-      (_RtlAdjustPrivilege)GetProcAddress(Ntdll, "RtlAdjustPrivilege");
+      (_RtlAdjustPrivilege)GetProcAddress(Ntdll, XorStr("RtlAdjustPrivilege"));
 
   boolean OldPriv;  // store the old privileges
 
@@ -423,17 +423,17 @@ inline HANDLE HijackExistingHandle(DWORD dwTargetProcessId) {
   // the open handles on our system
   _NtQuerySystemInformation NtQuerySystemInformation =
       (_NtQuerySystemInformation)GetProcAddress(Ntdll,
-                                                "NtQuerySystemInformation");
+                                                XorStr("NtQuerySystemInformation"));
 
   // get the address of NtDuplicateObject in ntdll.dll so we can duplicate an
   // existing handle into our cheat, basically performing the hijacking
   _NtDuplicateObject NtDuplicateObject =
-      (_NtDuplicateObject)GetProcAddress(Ntdll, "NtDuplicateObject");
+      (_NtDuplicateObject)GetProcAddress(Ntdll, XorStr("NtDuplicateObject"));
 
   // get the address of NtOpenProcess in ntdll.dll so wecan create a Duplicate
   // handle
   _NtOpenProcess NtOpenProcess =
-      (_NtOpenProcess)GetProcAddress(Ntdll, "NtOpenProcess");
+      (_NtOpenProcess)GetProcAddress(Ntdll, XorStr("NtOpenProcess"));
 
   // initialize the Object Attributes structure, you can just set each member to
   // NULL rather than create a function like i did
@@ -550,7 +550,7 @@ HANDLE UkiaOpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
   // API) directly.
   HANDLE hProcess = 0;
   _NtOpenProcess NtOpenProcess = (_NtOpenProcess)GetProcAddress(
-      GetModuleHandleW(L"ntdll.dll"), "NtOpenProcess");
+      GetModuleHandleA(XorStr("ntdll.dll")), XorStr("NtOpenProcess"));
   CLIENT_ID clientId = {(HANDLE)dwProcessId, NULL};
   OBJECT_ATTRIBUTES objAttr = InitObjectAttributes(NULL, 0, NULL, NULL);
   NtOpenProcess(&hProcess, dwDesiredAccess, &objAttr, &clientId);
@@ -562,7 +562,7 @@ BOOL UkiaReadProcessMemory(HANDLE hProcess, LPCVOID lpBaseAddress,
                            SIZE_T* lpNumberOfBytesRead) {
   static pNtReadVirtualMemory NtReadVirtualMemory = []() {
     return reinterpret_cast<pNtReadVirtualMemory>(
-        GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "NtReadVirtualMemory"));
+        GetProcAddress(GetModuleHandleA(XorStr("ntdll.dll")), XorStr("NtReadVirtualMemory")));
   }();
 
   if (!NtReadVirtualMemory) {
@@ -592,7 +592,7 @@ BOOL UkiaReadProcessMemory(HANDLE hProcess, LPCVOID lpBaseAddress,
 
   using RtlNtStatusToDosErrorFn = ULONG(WINAPI*)(NTSTATUS);
   static auto RtlNtStatusToDosError = reinterpret_cast<RtlNtStatusToDosErrorFn>(
-      GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "RtlNtStatusToDosError"));
+      GetProcAddress(GetModuleHandleA(XorStr("ntdll.dll")), XorStr("RtlNtStatusToDosError")));
 
   if (RtlNtStatusToDosError) {
     SetLastError(RtlNtStatusToDosError(status));
@@ -608,7 +608,7 @@ BOOL UkiaWriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress,
                             SIZE_T* lpNumberOfBytesWritten) {
   static pNtWriteVirtualMemory NtWriteVirtualMemory = []() {
     return reinterpret_cast<pNtWriteVirtualMemory>(
-        GetProcAddress(GetModuleHandleW(L"ntdll.dll"), "NtWriteVirtualMemory"));
+        GetProcAddress(GetModuleHandleA(XorStr("ntdll.dll")), XorStr("NtWriteVirtualMemory")));
   }();
 
   if (!NtWriteVirtualMemory) {
@@ -645,7 +645,7 @@ BOOL UkiaWriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress,
       using RtlNtStatusToDosErrorFn = ULONG(WINAPI*)(NTSTATUS);
       static auto RtlNtStatusToDosError =
           reinterpret_cast<RtlNtStatusToDosErrorFn>(GetProcAddress(
-              GetModuleHandleW(L"ntdll.dll"), "RtlNtStatusToDosError"));
+              GetModuleHandleA(XorStr("ntdll.dll")), XorStr("RtlNtStatusToDosError")));
 
       if (RtlNtStatusToDosError) {
         SetLastError(RtlNtStatusToDosError(status));
@@ -906,13 +906,13 @@ int UkiaInit(int argc, char* argv[]) {
   return 0;
 }
 
-inline int UkiaExit() {
+inline int UkiaExit(DWORD code = 0) {
   ProcessMgr.Detach();
   std::string selfPath = Ukia::GetSelfPath();
   if (selfPath.empty()) {
     return EXIT_FAILURE;
   }
   Ukia::PostUpdateHash(selfPath);
-  _exit(0);
+  _exit(code);
 }
 }  // namespace Ukia
