@@ -18,3 +18,4 @@ since this repo was private for some days. commit history maybe messd up
 - Zebra for his CS1.6 hack Evelion
 - Liv,CowNow,Me and any others who ever contribute to Aimstar
 - Friendly users on UC that ever helps me
+- DeepSeek R1 for cleaning my sh1t code
