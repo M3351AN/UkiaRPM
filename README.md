@@ -2,6 +2,7 @@ it's a template/base to make a simple hack
 
 currently is a simple esp hack for CS:S steam x64
 
+since this repo was private for some days. commit history maybe messd up
 ## Feature 
 - Use Native APIs to OpenProcess/WPM/RPM/CreateWindow
 - Multithread
