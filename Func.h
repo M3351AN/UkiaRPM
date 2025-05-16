@@ -58,9 +58,10 @@ void SoundThread() {
 }
 }  // namespace Sonar
 
-void FoundEnemy(EntityList& entity_list) {
+namespace Func {
+void FoundEnemy(EntityList& entityList) {
   if (!config::InfoString) return;
-  std::lock_guard<std::mutex> lock(entity_list.buffer_mtx);
+  std::lock_guard<std::mutex> lock(entityList.buffer_mtx);
 
   std::ostringstream allinfo;
 
@@ -69,10 +70,10 @@ void FoundEnemy(EntityList& entity_list) {
   float min_3d_dist = FLT_MAX;
   Vector2 best_screen_pos;
   bool best_on_screen = false;
-  const Vector3& local_pos = entity_list.local_player_data.position;
-  int local_team = entity_list.local_player_data.team;
+  const Vector3& local_pos = entityList.local_player_data.position;
+  int local_team = entityList.local_player_data.team;
 
-  for (const auto& ent : entity_list.GetCurrentEntities()) {
+  for (const auto& ent : entityList.GetCurrentEntities()) {
     if (!ent.IsValid()) continue;
     if (!ent.IsEnemy(local_team)) continue;
     if (ent.data.dormant) continue;
@@ -82,12 +83,12 @@ void FoundEnemy(EntityList& entity_list) {
     float dist = ent.DistanceTo(local_pos);
     Vector2 screen_pos;
     bool on_screen =
-        entity_list.view_matrix.WorldToScreen(head_pos, screen_pos);
+        entityList.view_matrix.WorldToScreen(head_pos, screen_pos);
     float center_dist_sq = FLT_MAX;
 
     if (on_screen) {
-      float dx = screen_pos.x - entity_list.view_matrix.screen_center.x;
-      float dy = screen_pos.y - entity_list.view_matrix.screen_center.y;
+      float dx = screen_pos.x - entityList.view_matrix.screen_center.x;
+      float dy = screen_pos.y - entityList.view_matrix.screen_center.y;
       center_dist_sq = dx * dx + dy * dy;
     }
 
@@ -127,19 +128,19 @@ void FoundEnemy(EntityList& entity_list) {
   }
 
   allinfo << "Local:\n"
-          << "Health: " << entity_list.local_player_data.health << " HP\n"
-          << "Team: " << entity_list.local_player_data.team << "\n"
+          << "Health: " << entityList.local_player_data.health << " HP\n"
+          << "Team: " << entityList.local_player_data.team << "\n"
           << "Pos: (" << local_pos.x << ", " << local_pos.y << ", "
           << local_pos.z << ")\n"
-          << "Flags: " << entity_list.local_player_data.flags << "\n"
-          << "FOV: " << entity_list.local_player_data.fov << "\n\n";
+          << "Flags: " << entityList.local_player_data.flags << "\n"
+          << "FOV: " << entityList.local_player_data.fov << "\n\n";
   global::infos = allinfo.str();
   return;
 }
 
-void SonarRun(EntityList& entity_list) {
+void SonarRun(EntityList& entityList) {
   if (!config::Sonar) return;
-  std::lock_guard<std::mutex> lock(entity_list.buffer_mtx);
+  std::lock_guard<std::mutex> lock(entityList.buffer_mtx);
 
   Sonar::SoundParams newParams;
   newParams.active = false;
@@ -149,10 +150,10 @@ void SonarRun(EntityList& entity_list) {
   float min_3d_dist = FLT_MAX;
   Vector2 best_screen_pos;
   bool best_on_screen = false;
-  const Vector3& local_pos = entity_list.local_player_data.position;
-  int local_team = entity_list.local_player_data.team;
+  const Vector3& local_pos = entityList.local_player_data.position;
+  int local_team = entityList.local_player_data.team;
 
-  for (const auto& ent : entity_list.GetCurrentEntities()) {
+  for (const auto& ent : entityList.GetCurrentEntities()) {
     if (!ent.IsValid()) continue;
     if (!ent.IsEnemy(local_team)) continue;
     if (ent.data.dormant) continue;
@@ -161,12 +162,12 @@ void SonarRun(EntityList& entity_list) {
     float dist = ent.DistanceTo(local_pos);
     Vector2 screen_pos;
     bool on_screen =
-        entity_list.view_matrix.WorldToScreen(head_pos, screen_pos);
+        entityList.view_matrix.WorldToScreen(head_pos, screen_pos);
     float center_dist_sq = FLT_MAX;
 
     if (on_screen) {
-      float dx = screen_pos.x - entity_list.view_matrix.screen_center.x;
-      float dy = screen_pos.y - entity_list.view_matrix.screen_center.y;
+      float dx = screen_pos.x - entityList.view_matrix.screen_center.x;
+      float dy = screen_pos.y - entityList.view_matrix.screen_center.y;
       center_dist_sq = dx * dx + dy * dy;
     }
 
@@ -189,14 +190,14 @@ void SonarRun(EntityList& entity_list) {
   }
   if (best_enemy) {
     if (best_on_screen) {
-      float dx = best_screen_pos.x - entity_list.view_matrix.screen_center.x;
-      float dy = best_screen_pos.y - entity_list.view_matrix.screen_center.y;
+      float dx = best_screen_pos.x - entityList.view_matrix.screen_center.x;
+      float dy = best_screen_pos.y - entityList.view_matrix.screen_center.y;
       float centerDist = sqrtf(dx * dx + dy * dy);
       float playerDist = min_3d_dist;
       newParams.frequency =
           500 + (3500 * (1 - std::clamp(playerDist / 1000.0f, 0.0f, 1.0f)));
       newParams.interval =
-          30 + (950 * (centerDist / entity_list.view_matrix.screen_center.x));
+          30 + (950 * (centerDist / entityList.view_matrix.screen_center.x));
       newParams.active = true;
     }
   }
@@ -207,23 +208,23 @@ void SonarRun(EntityList& entity_list) {
   return;
 }
 
-void ESPRun(EntityList& entity_list) {
+void ESPRun(EntityList& entityList) {
   if (!config::ESP) return;
-  const Vector3& local_pos = entity_list.local_player_data.position;
-  int local_team = entity_list.local_player_data.team;
+  const Vector3& local_pos = entityList.local_player_data.position;
+  int local_team = entityList.local_player_data.team;
 
-  for (const auto& ent : entity_list.GetCurrentEntities()) {
+  for (const auto& ent : entityList.GetCurrentEntities()) {
     if (!ent.IsValid()) continue;
     if (!ent.IsEnemy(local_team)) continue;
     float dist = ent.DistanceTo(local_pos);
     Vector2 screen_pos;
     bool on_screen =
-        entity_list.view_matrix.WorldToScreen(ent.data.position, screen_pos);
+        entityList.view_matrix.WorldToScreen(ent.data.position, screen_pos);
     if (on_screen) {
       Vector3 head_pos = {ent.data.position.x, ent.data.position.y,
                           ent.data.position.z + ent.data.head_height + 12.f};
       Vector2 head_screen_pos;
-      entity_list.view_matrix.WorldToScreen(head_pos, head_screen_pos);
+      entityList.view_matrix.WorldToScreen(head_pos, head_screen_pos);
       std::ostringstream playerInfo;
       playerInfo << "^ " << ent.name << "\n"  // maybe name?
                  << "Health: " << ent.data.health << "\n"
@@ -246,18 +247,18 @@ void ESPRun(EntityList& entity_list) {
   return;
 }
 
-void PitchIndicator() {
+void PitchIndicator(EntityList& entityList) {
   if (!config::PitchIndicator) return;
-  if (entity_list.local_player_address == 0) return;
+  if (entityList.local_player_address == 0) return;
 
-  int centerX = static_cast<int>(entity_list.view_matrix.screen_center.x);
-  int centerY = static_cast<int>(entity_list.view_matrix.screen_center.y);
+  int centerX = static_cast<int>(entityList.view_matrix.screen_center.x);
+  int centerY = static_cast<int>(entityList.view_matrix.screen_center.y);
 
-  float pitch = entity_list.local_player_data.viewangles.x;
+  float pitch = entityList.local_player_data.viewangles.x;
 
   float pitchRadians = pitch * (3.14159265f / 180.0f);
 
-  float actualFOV = static_cast<float>(entity_list.local_player_data.fov);
+  float actualFOV = static_cast<float>(entityList.local_player_data.fov);
 
   float verticalOffsetRatio =
       (pitchRadians / (actualFOV * (3.14159265f / 180.0f)));
@@ -269,10 +270,19 @@ void PitchIndicator() {
   RGBA lineColor = {0, 255, 0, 255};
   int lineLength = 15;
   int thickness = 1;
-  DrawNewText(centerX - 4, centerY, &lineColor, "^");
+  DrawNewText(centerX - 4, centerY - 2, &lineColor, "^");
   DrawLine(centerX - lineLength, dynamicY, centerX + lineLength - 20, dynamicY,
            &lineColor, thickness);
   DrawLine(centerX - lineLength + 20, dynamicY, centerX + lineLength, dynamicY,
            &lineColor, thickness);
   DrawNewText(centerX + lineLength + 5, dynamicY, &lineColor, std::to_string(pitch).c_str());
+}
+}  // namespace Func
+void RenderFunctions(EntityList& entityList) {
+  Func::ESPRun(entityList);
+  Func::PitchIndicator(entityList);
+  Func::SonarRun(entityList);
+}
+void MemoryFunctions(EntityList& entityList) { 
+    Func::FoundEnemy(entityList); 
 }
