@@ -446,6 +446,7 @@ class ScopedThreadManager {
  public:
   bool CreateThreads() {
     try {
+      m_threads.emplace_back([&] { CheckAliveThread(); });
       m_threads.emplace_back([&] { EntityUpdateThread(); });
       m_threads.emplace_back([&] { MemoryProcessThread(); });
       m_threads.emplace_back([&] { Sonar::SoundThread(); });
@@ -466,6 +467,17 @@ class ScopedThreadManager {
 
  private:
   std::vector<std::thread> m_threads;
+
+  void CheckAliveThread() {
+    while (global::isRunning) {
+      constexpr wchar_t EXPECTED_TITLE[] =
+          L"Counter-Strike Source - Direct3D 9 - 64 Bit";
+      wchar_t actualTitle[256] = {0};
+      GetWindowTextW(global::hwnd_, actualTitle, _countof(actualTitle));
+      global::isRunning = (wcscmp(actualTitle, EXPECTED_TITLE) == 0);
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+  }
 
   void EntityUpdateThread() {
     while (global::isRunning) {
@@ -549,15 +561,15 @@ int Mian() {
 
   global::isRunning = true;
 
-  ScopedThreadManager threadManager;
-  if (!threadManager.CreateThreads()) {
-    MessageBoxA(nullptr, XorStr("Failed to create worker threads"),
+  if (!WaitForGameFocus()) {
+    MessageBoxA(nullptr, XorStr("Wait game window focus time out"),
                 XorStr("UkiaRPM Error"), MB_ICONERROR);
     return -1;
   }
 
-  if (!WaitForGameFocus()) {
-    MessageBoxA(nullptr, XorStr("Wait game window focus time out"),
+  ScopedThreadManager threadManager;
+  if (!threadManager.CreateThreads()) {
+    MessageBoxA(nullptr, XorStr("Failed to create worker threads"),
                 XorStr("UkiaRPM Error"), MB_ICONERROR);
     return -1;
   }
