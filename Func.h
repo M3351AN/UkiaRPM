@@ -90,6 +90,7 @@ void DrawMenu() {
   ImGui::BeginTabBar(XorStr("##Tabs"));
 #ifdef _DEBUG
   if (ImGui::BeginTabItem(XorStr("semirage"))) {
+    ImGui::Text(XorStr("coming soon?"));
     ImGui::EndTabItem();
   }
 #endif
