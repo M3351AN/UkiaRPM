@@ -87,7 +87,7 @@ void DrawMenu() {
   const ImVec2 vecMenuSize = ImGui::GetWindowSize();
   ImDrawList* pDrawList = ImGui::GetWindowDrawList();
 
-  ImGui::BeginTabBar(XorStr("Tabs"));
+  ImGui::BeginTabBar(XorStr("##Tabs"));
 #ifdef _DEBUG
   if (ImGui::BeginTabItem(XorStr("semirage"))) {
     ImGui::EndTabItem();
@@ -183,8 +183,8 @@ void DrawMenu() {
     {
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                           ImVec2(style.FramePadding.x, 0));
-      ImGui::Checkbox(XorStr("PitchIndicator"), &config::PitchIndicator);
-      ImGui::Checkbox(XorStr("Sonar"), &config::Sonar);
+      ImGui::Checkbox(XorStr("pitch indicator"), &config::PitchIndicator);
+      ImGui::Checkbox(XorStr("sonar"), &config::Sonar);
       ImGui::PopStyleVar();
     }
     ImGui::EndChild();
@@ -195,7 +195,7 @@ void DrawMenu() {
     {
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                           ImVec2(style.FramePadding.x, 0));
-      ImGui::Checkbox(XorStr("Enemy info"), &config::InfoString);
+      ImGui::Checkbox(XorStr("enemy info"), &config::InfoString);
       ImGui::PopStyleVar();
     }
     ImGui::EndChild();
