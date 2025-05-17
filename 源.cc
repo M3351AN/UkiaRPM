@@ -17,7 +17,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "Func.h"
+#include "Functions/Func.h"
 #include "Utils/uiaccess.h"
 #pragma comment(lib, "winmm.lib")
 
