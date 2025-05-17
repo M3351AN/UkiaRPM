@@ -142,6 +142,8 @@ void ShowConsole() {
   HWND hwndConsole = GetConsoleWindow();
   if (hwndConsole) {
     ShowWindow(hwndConsole, SW_SHOW);  // œ‘ æøÿ÷∆Ã®
+    SetWindowPos(hwndConsole, HWND_NOTOPMOST, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
   }
 }
 void AntiDebugger(std::string log = "") noexcept {
