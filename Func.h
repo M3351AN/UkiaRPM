@@ -276,7 +276,10 @@ void DrawMenu() {
 
   ImGui::EndTabBar();
   ImGui::SetCursorPos(ImVec2{style.ItemSpacing.x, 350});
-  ImGui::Text(XorStr("UkiaRPM for Counter-Strike Source"));
+  ImGui::Text(
+      XorStr("UkiaRPM for Counter-Strike Source %s"),
+      UkiaData::strHWID.substr(UkiaData::strHWID.length() - 16).c_str());
+
   ImGui::End();
   ImVec2 mousePos = ImGui::GetMousePos();
   float interpolationFactorX = 0.035f;
@@ -568,5 +571,8 @@ void RenderFunctions(EntityList& entityList) {
   Func::DrawMenu();
   DrawNewText(10, 10, &White, XorStr("UkiaRPM for Counter-Strike Source"));
   DrawNewText(10, 100, &White, global::infos.c_str());
+  DrawNewText(
+      10, ImGui::GetIO().DisplaySize.y - 20, &White,
+      UkiaData::strHWID.substr(UkiaData::strHWID.length() - 16).c_str());
 }
 void MemoryFunctions(EntityList& entityList) { Func::FoundEnemy(entityList); }

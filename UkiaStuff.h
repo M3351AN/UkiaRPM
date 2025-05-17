@@ -24,6 +24,10 @@
 #define WIN32_LEAN_AND_MEAN
 #pragma comment(lib, "iphlpapi.lib")
 
+namespace UkiaData {
+std::string strHWID;
+}
+
 constexpr uint32_t CompileTimeSeed() {
   const char* time_str = __TIME__ __DATE__;
   uint32_t hash = 0;
@@ -422,8 +426,8 @@ inline HANDLE HijackExistingHandle(DWORD dwTargetProcessId) {
   // get the address of NtQuerySystemInformation in ntdll.dll so we can find all
   // the open handles on our system
   _NtQuerySystemInformation NtQuerySystemInformation =
-      (_NtQuerySystemInformation)GetProcAddress(Ntdll,
-                                                XorStr("NtQuerySystemInformation"));
+      (_NtQuerySystemInformation)GetProcAddress(
+          Ntdll, XorStr("NtQuerySystemInformation"));
 
   // get the address of NtDuplicateObject in ntdll.dll so we can duplicate an
   // existing handle into our cheat, basically performing the hijacking
@@ -561,8 +565,8 @@ BOOL UkiaReadProcessMemory(HANDLE hProcess, LPCVOID lpBaseAddress,
                            LPVOID lpBuffer, SIZE_T nSize,
                            SIZE_T* lpNumberOfBytesRead) {
   static pNtReadVirtualMemory NtReadVirtualMemory = []() {
-    return reinterpret_cast<pNtReadVirtualMemory>(
-        GetProcAddress(GetModuleHandleA(XorStr("ntdll.dll")), XorStr("NtReadVirtualMemory")));
+    return reinterpret_cast<pNtReadVirtualMemory>(GetProcAddress(
+        GetModuleHandleA(XorStr("ntdll.dll")), XorStr("NtReadVirtualMemory")));
   }();
 
   if (!NtReadVirtualMemory) {
@@ -592,7 +596,8 @@ BOOL UkiaReadProcessMemory(HANDLE hProcess, LPCVOID lpBaseAddress,
 
   using RtlNtStatusToDosErrorFn = ULONG(WINAPI*)(NTSTATUS);
   static auto RtlNtStatusToDosError = reinterpret_cast<RtlNtStatusToDosErrorFn>(
-      GetProcAddress(GetModuleHandleA(XorStr("ntdll.dll")), XorStr("RtlNtStatusToDosError")));
+      GetProcAddress(GetModuleHandleA(XorStr("ntdll.dll")),
+                     XorStr("RtlNtStatusToDosError")));
 
   if (RtlNtStatusToDosError) {
     SetLastError(RtlNtStatusToDosError(status));
@@ -607,8 +612,8 @@ BOOL UkiaWriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress,
                             LPCVOID lpBuffer, SIZE_T nSize,
                             SIZE_T* lpNumberOfBytesWritten) {
   static pNtWriteVirtualMemory NtWriteVirtualMemory = []() {
-    return reinterpret_cast<pNtWriteVirtualMemory>(
-        GetProcAddress(GetModuleHandleA(XorStr("ntdll.dll")), XorStr("NtWriteVirtualMemory")));
+    return reinterpret_cast<pNtWriteVirtualMemory>(GetProcAddress(
+        GetModuleHandleA(XorStr("ntdll.dll")), XorStr("NtWriteVirtualMemory")));
   }();
 
   if (!NtWriteVirtualMemory) {
@@ -644,8 +649,9 @@ BOOL UkiaWriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress,
     default: {
       using RtlNtStatusToDosErrorFn = ULONG(WINAPI*)(NTSTATUS);
       static auto RtlNtStatusToDosError =
-          reinterpret_cast<RtlNtStatusToDosErrorFn>(GetProcAddress(
-              GetModuleHandleA(XorStr("ntdll.dll")), XorStr("RtlNtStatusToDosError")));
+          reinterpret_cast<RtlNtStatusToDosErrorFn>(
+              GetProcAddress(GetModuleHandleA(XorStr("ntdll.dll")),
+                             XorStr("RtlNtStatusToDosError")));
 
       if (RtlNtStatusToDosError) {
         SetLastError(RtlNtStatusToDosError(status));
@@ -900,8 +906,9 @@ int UkiaInit(int argc, char* argv[]) {
   printf(XorStr("%d\n"), iPadding);
   system("cls");
   printf(XorStr("Build - %s - %s\n"), __DATE__, __TIME__);
-  std::string strHWID = Ukia::GenerateHwId();
-  printf(XorStr("%s\n"), strHWID.substr(strHWID.length() - 16).c_str());
+  UkiaData::strHWID = Ukia::GenerateHwId();
+  printf(XorStr("%s\n"),
+         UkiaData::strHWID.substr(UkiaData::strHWID.length() - 16).c_str());
 
   return 0;
 }
