@@ -1,8 +1,9 @@
 #pragma once
 
+#include <mutex>
+
 #include "../../CSSx64.h"
 #include "../config.h"
-#include <mutex>
 
 namespace Sonar {
 struct SoundParams {

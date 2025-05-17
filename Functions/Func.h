@@ -2,9 +2,8 @@
 #include <sstream>
 
 #include "../CSSx64.h"
-
-#include "Visuals/ESP.h"
 #include "Miscs/Miscs.h"
+#include "Visuals/ESP.h"
 #include "menu.h"
 
 void RenderFunctions(EntityList& entityList) {

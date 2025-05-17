@@ -170,21 +170,9 @@ class Entity {
   EntityData data;
   std::string name;
   int index;
-  std::chrono::steady_clock::time_point last_full_update;
 
-  Entity() : address(0), index(-1), last_full_update() {}
-  Entity(uintptr_t addr, int idx)
-      : address(addr), index(idx), last_full_update() {}
-
-  void RefreshCriticalData() {
-    // call once for 1 block in in 5 periods or call twice for 10 blocks in a
-    // period i think call twice for 1 block in a period and then call once for
-    // 10 blocks in 5 periods better.
-    if (address != 0) {
-      constexpr uintptr_t position_offset = offsetof(EntityData, position);
-      Ukia::ProcessMgr.ReadMemory(address + position_offset, data.position);
-    }
-  }
+  Entity() : address(0), index(-1) {}
+  Entity(uintptr_t addr, int idx) : address(addr), index(idx) {}
 
   void RefreshFullData() {
     if (address != 0) {
@@ -195,8 +183,6 @@ class Entity {
       Ukia::ProcessMgr.ReadMemory(Memory::nameListBase + 0x798 + (index * 0x2),
                                   nameAddr);
       name = Ukia::ProcessMgr.ReadString(nameAddr);
-
-      last_full_update = std::chrono::steady_clock::now();
     }
   }
 
@@ -253,21 +239,14 @@ class EntityList {
     Ukia::ProcessMgr.ReadMemory(Memory::clientAddress + kNameListOffset,
                                 Memory::nameListBase);
 
-    std::for_each(
-        std::execution::par_unseq, back_buffer.entities.begin(),
-        back_buffer.entities.end(), [&](Entity& ent) {
-          const int i = &ent - &back_buffer.entities[0];
-          ent.address = back_buffer.address_cache[i];
-          ent.index = i;
+    std::for_each(std::execution::par_unseq, back_buffer.entities.begin(),
+                  back_buffer.entities.end(), [&](Entity& ent) {
+                    const int i = &ent - &back_buffer.entities[0];
+                    ent.address = back_buffer.address_cache[i];
+                    ent.index = i;
 
-          if (ent.last_full_update.time_since_epoch().count() == 0 ||
-              std::chrono::steady_clock::now() - ent.last_full_update >
-                  std::chrono::milliseconds(50)) {
-            ent.RefreshFullData();
-          } else {
-            ent.RefreshCriticalData();
-          }
-        });
+                    ent.RefreshFullData();
+                  });
 
     if (view_matrix.NeedUpdate()) {
       view_matrix.Update(Memory::engineAddress);
