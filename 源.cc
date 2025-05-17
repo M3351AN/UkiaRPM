@@ -70,7 +70,7 @@ void JustGetWindowRect() {
       global::screenSize.y = clientHeight;
     } else {
       MessageBoxA(nullptr, XorStr("Failed to get window rect."),
-                  XorStr("UkiaCSS"), MB_OK);
+                  XorStr("UkiaRPM"), MB_OK);
       Ukia::UkiaExit();
     }
   }
@@ -346,6 +346,8 @@ bool DirectXInit() {
   ImGui_ImplWin32_Init(OverlayWindow::Hwnd);
   ImGui_ImplDX9_Init(DirectX9Interface::pDevice);
   DirectX9Interface::Direct3D9->Release();
+  LoadTextureFromMemory(DirectX9Interface::pDevice, ShigureImg,
+                        sizeof(ShigureImg), &global::Shigure);
   return true;
 }
 
@@ -401,7 +403,7 @@ void SetupWindow() {
 }
 
 void LogInfo() {
-  printf(XorStr("UkiaCSS v1.0\n"));
+  printf(XorStr("UkiaRPM for Counter-Strike Source\n"));
   printf(
       XorStr("\u4eca\u65e5\u306f\u3084\u308b\u6c17\u306f\u306a\u3044\u3063"
              "\u3066\n\u30e9\u30c3\u30ad\u30fc\u30a2\u30a4\u30c6\u30e0\u3092"
@@ -422,7 +424,7 @@ bool InitializeGameProcess() {
 
   if (!Memory::UpdateAddress()) {
     MessageBoxA(nullptr, XorStr("Memory update failed"),
-                XorStr("UkiaCSS Error"), MB_ICONERROR);
+                XorStr("UkiaRPM Error"), MB_ICONERROR);
     return false;
   }
 
@@ -486,7 +488,7 @@ bool WaitForGameFocus() {
     if (std::chrono::steady_clock::now() - startTime >
         std::chrono::seconds(30)) {
       MessageBoxA(nullptr, XorStr("Focus wait timeout"),
-                  XorStr("UkiaCSS Error"), MB_ICONERROR);
+                  XorStr("UkiaRPM Error"), MB_ICONERROR);
       return false;
     }
     std::this_thread::sleep_for(focusCheckInterval);
@@ -500,7 +502,7 @@ bool InitializeRendering() {
 
   if (!DirectXInit()) {
     MessageBoxA(nullptr, XorStr("DirectX initialization failed"),
-                XorStr("UkiaCSS Error"), MB_ICONERROR);
+                XorStr("UkiaRPM Error"), MB_ICONERROR);
     return false;
   }
 
@@ -531,7 +533,7 @@ int Mian() {
 
   if (!InitializeGameProcess()) {
     MessageBoxA(nullptr, XorStr("Failed to initialize game process"),
-                XorStr("UkiaCSS Error"), MB_ICONERROR);
+                XorStr("UkiaRPM Error"), MB_ICONERROR);
     return -1;
   }
 
@@ -540,19 +542,19 @@ int Mian() {
   ScopedThreadManager threadManager;
   if (!threadManager.CreateThreads()) {
     MessageBoxA(nullptr, XorStr("Failed to create worker threads"),
-                XorStr("UkiaCSS Error"), MB_ICONERROR);
+                XorStr("UkiaRPM Error"), MB_ICONERROR);
     return -1;
   }
 
   if (!WaitForGameFocus()) {
     MessageBoxA(nullptr, XorStr("Wait game window focus time out"),
-                XorStr("UkiaCSS Error"), MB_ICONERROR);
+                XorStr("UkiaRPM Error"), MB_ICONERROR);
     return -1;
   }
 
   if (!InitializeRendering()) {
     MessageBoxA(nullptr, XorStr("Failed to initialize rendering system"),
-                XorStr("UkiaCSS Error"), MB_ICONERROR);
+                XorStr("UkiaRPM Error"), MB_ICONERROR);
     return -1;
   }
 

@@ -10,11 +10,16 @@
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "dwmapi.lib")
 
+#define CS_VERSION 9540945
+
 namespace global {
 std::atomic<bool> isRunning(true);
 
 DWORD uiAccessStatus;
 DWORD processId;
+
+DWORD gameVersion;
+
 inline HDC hdcBuffer = NULL;
 inline HBITMAP hbmBuffer = NULL;
 
@@ -25,6 +30,8 @@ Vector2 screenSize;
 Vector2 screenPos;
 
 std::string infos;
+
+inline IDirect3DTexture9* Shigure = nullptr;
 }  // namespace global
 class ViewMatrix {
  private:
@@ -125,7 +132,7 @@ struct EntityData : public BaseEntityData {
   int m_bHasDefuser;             // 0x1AB4
 };
 
-  struct LocalData : public BaseEntityData {
+struct LocalData : public BaseEntityData {
   char _pad7[0x398 - 0x32C];
   Vector2 viewangles1;
   char _pad8[0x440 - 0x3A0];
@@ -151,6 +158,8 @@ bool UpdateAddress() {
 
   engineAddress = reinterpret_cast<uintptr_t>(
       Ukia::ProcessMgr.GetProcessModuleHandle(XorStr("engine.dll")));
+
+  Ukia::ProcessMgr.ReadMemory(engineAddress + 0x00793EB0, global::gameVersion);
   return true;
 }
 };  // namespace Memory
@@ -183,9 +192,8 @@ class Entity {
       Ukia::ProcessMgr.ReadMemory(address, data);
 
       uintptr_t nameAddr;
-      Ukia::ProcessMgr.ReadMemory(
-          Memory::nameListBase + 0x798 + (index * 0x2),
-          nameAddr);
+      Ukia::ProcessMgr.ReadMemory(Memory::nameListBase + 0x798 + (index * 0x2),
+                                  nameAddr);
       name = Ukia::ProcessMgr.ReadString(nameAddr);
 
       last_full_update = std::chrono::steady_clock::now();

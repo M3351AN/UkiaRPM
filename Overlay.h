@@ -8,6 +8,12 @@
 #include "Imgui/imgui_impl_dx9.h"
 #include "Imgui/imgui_impl_win32.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include <d3d9.h>
+
+#include "Utils/stb_image.h"
+#include "shigure.h"
+
 #define ABS(X) ((X < 0) ? (-X) : (X))
 #define BOX_OFFSET 20.f
 
@@ -222,4 +228,37 @@ void DrawCornerBox(int x, int y, int w, int h, int borderPx, RGBA* color) {
   DrawFilledRect(x + w + borderPx, y, borderPx, h / 3, color);
   DrawFilledRect(x + w + borderPx, y + h - h / 3 + borderPx * 2, borderPx,
                  h / 3, color);
+}
+
+bool LoadTextureFromMemory(IDirect3DDevice9* device,
+                           const unsigned char* image_data, int image_size,
+                           IDirect3DTexture9** out_texture) {
+  int width, height, channels;
+  unsigned char* data = stbi_load_from_memory(image_data, image_size, &width,
+                                              &height, &channels, 4);
+  if (!data) return false;
+
+  if (device->CreateTexture(width, height, 1, D3DUSAGE_DYNAMIC, D3DFMT_A8R8G8B8,
+                            D3DPOOL_DEFAULT, out_texture, nullptr) != D3D_OK) {
+    stbi_image_free(data);
+    return false;
+  }
+
+  D3DLOCKED_RECT rect;
+  (*out_texture)->LockRect(0, &rect, nullptr, D3DLOCK_DISCARD);
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      unsigned char* src = data + (y * width + x) * 4;
+      unsigned char* dest =
+          (unsigned char*)rect.pBits + (y * rect.Pitch) + (x * 4);
+      dest[0] = src[2];  // R
+      dest[1] = src[1];  // G
+      dest[2] = src[0];  // B
+      dest[3] = src[3];  // A
+    }
+  }
+  (*out_texture)->UnlockRect(0);
+
+  stbi_image_free(data);
+  return true;
 }

@@ -229,7 +229,9 @@
     <ClInclude Include="Overlay.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="resource1.h" />
+    <ClInclude Include="shigure.h" />
     <ClInclude Include="UkiaStuff.h" />
+    <ClInclude Include="Utils\stb_image.h" />
     <ClInclude Include="Utils\uiaccess.h" />
     <ClInclude Include="Utils\XorStr.h" />
   </ItemGroup>
