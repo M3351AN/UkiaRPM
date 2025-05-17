@@ -14,6 +14,8 @@ since this repo was private for some days. commit history maybe messd up
 - modify functions that u wanna make
 - if u wanna write memory, add vm write flag in attach() func
 - if possible, use kernel RPM/WPM like aimstar ring0
+- remember,"The security of an entire system is only equal to the security of its weakest link.
+"
 ## Credits
 - Zebra for his CS1.6 hack Evelion
 - Liv,CowNow,Me and any others who ever contribute to Aimstar
