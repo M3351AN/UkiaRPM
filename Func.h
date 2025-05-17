@@ -239,10 +239,10 @@ void DrawMenu() {
 #endif
       ImGui::LabelText(getenv("USERNAME"), XorStr("copy licenced to:"));
 
-      ImGui::LabelText(std::to_string(Memory::clientAddress).c_str(),
-                       XorStr("client base:"));
-      ImGui::LabelText(std::to_string(Memory::engineAddress).c_str(),
-                       XorStr("engine base:"));
+      ImGui::LabelText(std::format("0x{:X}", Memory::clientAddress).c_str(),
+                       "client base:");
+      ImGui::LabelText(std::format("0x{:X}", Memory::engineAddress).c_str(),
+                       "engine base:");
     }
     ImGui::EndChild();
 
