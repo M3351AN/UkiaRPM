@@ -1466,6 +1466,49 @@ int ImFormatStringV(char* buf, size_t buf_size, const char* fmt, va_list args)
 }
 #endif // #ifdef IMGUI_DISABLE_DEFAULT_FORMAT_FUNCTIONS
 
+void ImFormatStringToTempBuffer(const char** out_buf, const char** out_buf_end,
+                                const char* fmt, ...) {
+  ImGuiContext& g = *GImGui;
+  va_list args;
+  va_start(args, fmt);
+  if (fmt[0] == '%' && fmt[1] == 's' && fmt[2] == 0) {
+    const char* buf =
+        va_arg(args, const char*);  // Skip formatting when using "%s"
+    *out_buf = buf;
+    if (out_buf_end) {
+      *out_buf_end = buf + strlen(buf);
+    }
+  } else {
+    int buf_len =
+        ImFormatStringV(g.TempBuffer, sizeof(g.TempBuffer), fmt, args);
+    *out_buf = g.TempBuffer;
+    if (out_buf_end) {
+      *out_buf_end = g.TempBuffer + buf_len;
+    }
+  }
+  va_end(args);
+}
+
+void ImFormatStringToTempBufferV(const char** out_buf, const char** out_buf_end,
+                                 const char* fmt, va_list args) {
+  ImGuiContext& g = *GImGui;
+  if (fmt[0] == '%' && fmt[1] == 's' && fmt[2] == 0) {
+    const char* buf =
+        va_arg(args, const char*);  // Skip formatting when using "%s"
+    *out_buf = buf;
+    if (out_buf_end) {
+      *out_buf_end = buf + strlen(buf);
+    }
+  } else {
+    int buf_len =
+        ImFormatStringV(g.TempBuffer, sizeof(g.TempBuffer), fmt, args);
+    *out_buf = g.TempBuffer;
+    if (out_buf_end) {
+      *out_buf_end = g.TempBuffer + buf_len;
+    }
+  }
+}
+
 // CRC32 needs a 1KB lookup table (not cache friendly)
 // Although the code to generate the table is simple and shorter than the table itself, using a const table allows us to easily:
 // - avoid an unnecessary branch/memory tap, - keep the ImHashXXX functions usable by static constructors, - make it thread-safe.
@@ -4966,56 +5009,97 @@ ImVec2 ImGui::GetItemRectSize()
     return window->DC.LastItemRect.GetSize();
 }
 
-bool ImGui::BeginChildEx(const char* name, ImGuiID id, const ImVec2& size_arg, bool border, ImGuiWindowFlags flags)
-{
-    ImGuiContext& g = *GImGui;
-    ImGuiWindow* parent_window = g.CurrentWindow;
+bool ImGui::BeginChildEx(const char* name, ImGuiID id, const ImVec2& size_arg,
+                         bool border, ImGuiWindowFlags flags) {
+  ImGuiContext& g = *GImGui;
+  ImGuiWindow* parent_window = g.CurrentWindow;
 
-    flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_ChildWindow;
-    flags |= (parent_window->Flags & ImGuiWindowFlags_NoMove);  // Inherit the NoMove flag
+  flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+           ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_ChildWindow |
+           ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar;
+  flags |= (parent_window->Flags &
+            ImGuiWindowFlags_NoMove);  // Inherit the NoMove flag
 
-    // Size
-    const ImVec2 content_avail = GetContentRegionAvail();
-    ImVec2 size = ImFloor(size_arg);
-    const int auto_fit_axises = ((size.x == 0.0f) ? (1 << ImGuiAxis_X) : 0x00) | ((size.y == 0.0f) ? (1 << ImGuiAxis_Y) : 0x00);
-    if (size.x <= 0.0f)
-        size.x = ImMax(content_avail.x + size.x, 4.0f); // Arbitrary minimum child size (0.0f causing too much issues)
-    if (size.y <= 0.0f)
-        size.y = ImMax(content_avail.y + size.y, 4.0f);
-    SetNextWindowSize(size);
+  // Size
+  const ImVec2 content_avail = GetContentRegionAvail();
+  ImVec2 size = ImFloor(size_arg);
+  const int auto_fit_axises = ((size.x == 0.0f) ? (1 << ImGuiAxis_X) : 0x00) |
+                              ((size.y == 0.0f) ? (1 << ImGuiAxis_Y) : 0x00);
+  if (size.x <= 0.0f)
+    size.x = ImMax(
+        content_avail.x + size.x,
+        4.0f);  // Arbitrary minimum child size (0.0f causing too many issues)
+  if (size.y <= 0.0f) size.y = ImMax(content_avail.y + size.y, 4.0f);
+  SetNextWindowSize(size);
 
-    // Build up name. If you need to append to a same child from multiple location in the ID stack, use BeginChild(ImGuiID id) with a stable value.
-    if (name)
-        ImFormatString(g.TempBuffer, IM_ARRAYSIZE(g.TempBuffer), "%s/%s_%08X", parent_window->Name, name, id);
-    else
-        ImFormatString(g.TempBuffer, IM_ARRAYSIZE(g.TempBuffer), "%s/%08X", parent_window->Name, id);
+  // Build up name. If you need to append to a same child from multiple location
+  // in the ID stack, use BeginChild(ImGuiID id) with a stable value.
+  const char* temp_window_name;
+  if (name)
+    ImFormatStringToTempBuffer(&temp_window_name, NULL, "%s/%s_%08X",
+                               parent_window->Name, name, id);
+  else
+    ImFormatStringToTempBuffer(&temp_window_name, NULL, "%s/%08X",
+                               parent_window->Name, id);
 
-    const float backup_border_size = g.Style.ChildBorderSize;
-    if (!border)
-        g.Style.ChildBorderSize = 0.0f;
-    bool ret = Begin(g.TempBuffer, NULL, flags);
-    g.Style.ChildBorderSize = backup_border_size;
+  const float backup_border_size = g.Style.ChildBorderSize;
+  if (!border) g.Style.ChildBorderSize = 0.0f;
+  bool ret = Begin(temp_window_name, NULL, flags);
+  g.Style.ChildBorderSize = backup_border_size;
 
-    ImGuiWindow* child_window = g.CurrentWindow;
-    child_window->ChildId = id;
-    child_window->AutoFitChildAxises = (ImS8)auto_fit_axises;
+  ImGuiWindow* child_window = g.CurrentWindow;
+  child_window->ChildId = id;
+  child_window->AutoFitChildAxises = (ImS8)auto_fit_axises;
 
-    // Set the cursor to handle case where the user called SetNextWindowPos()+BeginChild() manually.
-    // While this is not really documented/defined, it seems that the expected thing to do.
-    if (child_window->BeginCount == 1)
-        parent_window->DC.CursorPos = child_window->Pos;
+  // Set the cursor to handle case where the user called
+  // SetNextWindowPos()+BeginChild() manually. While this is not really
+  // documented/defined, it seems that the expected thing to do.
+  if (child_window->BeginCount == 1)
+    parent_window->DC.CursorPos = child_window->Pos;
 
-    // Process navigation-in immediately so NavInit can run on first frame
-    if (g.NavActivateId == id && !(flags & ImGuiWindowFlags_NavFlattened) && (child_window->DC.NavLayersActiveMask != 0 || child_window->DC.NavHasScroll))
-    {
-        FocusWindow(child_window);
-        NavInitWindow(child_window, false);
-        SetActiveID(id + 1, child_window); // Steal ActiveId with another arbitrary id so that key-press won't activate child item
-        g.ActiveIdSource = ImGuiInputSource_Nav;
-    }
-    return ret;
+  // Process navigation-in immediately so NavInit can run on first frame
+  // Can enter a child if (A) it has navigatable items or (B) it can be
+  // scrolled.
+  const ImGuiID temp_id_for_activation = (id + 1);
+  if (g.ActiveId == temp_id_for_activation) ClearActiveID();
+  if (g.NavActivateId == id && !(flags & ImGuiWindowFlags_NavFlattened) &&
+      child_window->DC.NavLayersActiveMask != 0) {
+    FocusWindow(child_window);
+    NavInitWindow(child_window, false);
+    SetActiveID(temp_id_for_activation,
+                child_window);  // Steal ActiveId with another arbitrary id so
+                                // that key-press won't activate child item
+    g.ActiveIdSource = g.NavInputSource;
+  }
+
+  float space_sz = 5.f;
+  ImVec2 label_size = CalcTextSize(name);
+
+  if (name) {
+    PushStyleVar(ImGuiStyleVar_Alpha, 1.f);
+    RenderFrame(parent_window->DC.CursorPos + ImVec2(0.f, space_sz),
+                parent_window->DC.CursorPos + size,
+                GetColorU32(ImGuiCol_ChildBg), false, 0.f);
+    PopStyleVar();
+
+    RenderText(parent_window->DC.CursorPos +
+                   ImVec2(20.f, space_sz - (label_size.y / 2)),
+               name);
+    // SetCursorPosY(GetCursorPosY() + space_sz + (label_size.y / 2) +
+    // g.Style.ItemSpacing.y + g.Style.FramePadding.y * 2);
+    Dummy(ImVec2{g.Style.ItemSpacing.x + g.Style.FramePadding.x * 2,
+                 GetCursorPosY() + space_sz + (label_size.y / 2) +
+                     g.Style.ItemSpacing.y + g.Style.FramePadding.y * 2});
+    Indent(10.f);
+  } else {
+    PushStyleVar(ImGuiStyleVar_Alpha, 1.f);
+    RenderFrame(parent_window->DC.CursorPos, parent_window->DC.CursorPos + size,
+                GetColorU32(ImGuiCol_ChildBg), false, 0.f);
+    PopStyleVar();
+  }
+
+  return ret;
 }
-
 bool ImGui::BeginChild(const char* str_id, const ImVec2& size_arg, bool border, ImGuiWindowFlags extra_flags)
 {
     ImGuiWindow* window = GetCurrentWindow();
