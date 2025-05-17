@@ -19,6 +19,15 @@
     <Filter Include="源文件\ImGui">
       <UniqueIdentifier>{908b7e56-a5e1-4807-a376-1bade3d6f142}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Functions">
+      <UniqueIdentifier>{0d84691b-ad53-4e8b-89be-15337bbe38be}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Functions\Miscs">
+      <UniqueIdentifier>{ba6a50c4-dd82-4da8-abee-195efc4759db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Functions\Visuals">
+      <UniqueIdentifier>{110944b5-c3bc-494a-84fb-aa79b1dadfbe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="源.cc">
@@ -59,9 +68,6 @@
     <ClInclude Include="CSSx64.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Func.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="ImGui\imconfig.h">
       <Filter>源文件\ImGui</Filter>
     </ClInclude>
@@ -92,9 +98,6 @@
     <ClInclude Include="Utils\uiaccess.h">
       <Filter>头文件\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="resource1.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -103,6 +106,21 @@
     </ClInclude>
     <ClInclude Include="Utils\stb_image.h">
       <Filter>头文件\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\Func.h">
+      <Filter>头文件\Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\Visuals\ESP.h">
+      <Filter>头文件\Functions\Visuals</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\config.h">
+      <Filter>头文件\Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\Miscs\Miscs.h">
+      <Filter>头文件\Functions\Miscs</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\menu.h">
+      <Filter>头文件\Functions</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
