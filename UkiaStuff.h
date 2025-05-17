@@ -636,17 +636,15 @@ BOOL UkiaWriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress,
     return TRUE;
   }
 
-  switch (status) {
-    case 0xC0000005:  // STATUS_ACCESS_VIOLATION
+
+
+    if (status == 0xC0000005)  // STATUS_ACCESS_VIOLATION
       SetLastError(ERROR_NOACCESS);
-      break;
-    case 0xC0000022:  // STATUS_ACCESS_DENIED
+    if (status == 0xC0000022) // STATUS_ACCESS_DENIED
       SetLastError(ERROR_ACCESS_DENIED);
-      break;
-    case 0x8000000D:  // STATUS_PARTIAL_COPY
+    if (status == 0x8000000D)
       SetLastError(ERROR_WRITE_FAULT);
-      break;
-    default: {
+    else {
       using RtlNtStatusToDosErrorFn = ULONG(WINAPI*)(NTSTATUS);
       static auto RtlNtStatusToDosError =
           reinterpret_cast<RtlNtStatusToDosErrorFn>(
@@ -659,7 +657,7 @@ BOOL UkiaWriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress,
         SetLastError(ERROR_UNIDENTIFIED_ERROR);
       }
     }
-  }
+
 
   return FALSE;
 }
@@ -881,6 +879,7 @@ BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType) {
   return FALSE;
 }
 int UkiaInit(int argc, char* argv[]) {
+  std::locale::global(std::locale("en_US.UTF-8"));
 #ifdef NDEBUG
   Ukia::HideConsole();
   Ukia::AntiDebugger(XorStr("Initialize fail"));
