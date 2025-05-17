@@ -98,6 +98,18 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(SolutionDir)/Utils;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(ProjectDir)Utils/yaml-cpp/lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Ring0|x64'">
+    <IncludePath>$(SolutionDir)/Utils;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(ProjectDir)Utils/yaml-cpp/lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Ring3|x64'">
+    <IncludePath>$(SolutionDir)/Utils;$(LLVMInstallDir)\lib\clang\$(LLVMIncludeVersion)\include;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)Utils/yaml-cpp/lib;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -159,6 +171,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
+      <AdditionalDependencies>yaml-cpp.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
@@ -185,6 +198,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
+      <AdditionalDependencies>yaml-cpp.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
@@ -211,6 +225,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <UACExecutionLevel>HighestAvailable</UACExecutionLevel>
+      <AdditionalDependencies>yaml-cpp.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Manifest>
       <EnableDpiAwareness>true</EnableDpiAwareness>
@@ -230,6 +245,7 @@
   <ItemGroup>
     <ClInclude Include="CSSx64.h" />
     <ClInclude Include="Functions\config.h" />
+    <ClInclude Include="Functions\ConfigSaver.h" />
     <ClInclude Include="Functions\Func.h" />
     <ClInclude Include="Functions\menu.h" />
     <ClInclude Include="Functions\Miscs\Miscs.h" />
@@ -249,6 +265,25 @@
     <ClInclude Include="Utils\stb_image.h" />
     <ClInclude Include="Utils\uiaccess.h" />
     <ClInclude Include="Utils\XorStr.h" />
+    <ClInclude Include="Utils\yaml-cpp\anchor.h" />
+    <ClInclude Include="Utils\yaml-cpp\binary.h" />
+    <ClInclude Include="Utils\yaml-cpp\depthguard.h" />
+    <ClInclude Include="Utils\yaml-cpp\dll.h" />
+    <ClInclude Include="Utils\yaml-cpp\emitfromevents.h" />
+    <ClInclude Include="Utils\yaml-cpp\emitter.h" />
+    <ClInclude Include="Utils\yaml-cpp\emitterdef.h" />
+    <ClInclude Include="Utils\yaml-cpp\emittermanip.h" />
+    <ClInclude Include="Utils\yaml-cpp\emitterstyle.h" />
+    <ClInclude Include="Utils\yaml-cpp\eventhandler.h" />
+    <ClInclude Include="Utils\yaml-cpp\exceptions.h" />
+    <ClInclude Include="Utils\yaml-cpp\mark.h" />
+    <ClInclude Include="Utils\yaml-cpp\noexcept.h" />
+    <ClInclude Include="Utils\yaml-cpp\null.h" />
+    <ClInclude Include="Utils\yaml-cpp\ostream_wrapper.h" />
+    <ClInclude Include="Utils\yaml-cpp\parser.h" />
+    <ClInclude Include="Utils\yaml-cpp\stlemitter.h" />
+    <ClInclude Include="Utils\yaml-cpp\traits.h" />
+    <ClInclude Include="Utils\yaml-cpp\yaml.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="UkiaRPM.rc" />

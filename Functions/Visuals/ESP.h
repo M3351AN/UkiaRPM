@@ -1,7 +1,6 @@
 #pragma once
 
 #include "../../CSSx64.h"
-#include "../config.h"
 
 namespace ESP {
 

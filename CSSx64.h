@@ -6,6 +6,7 @@
 #include "Overlay.h"
 #include "UkiaStuff.h"
 #include "Utils/XorStr.h"
+#include "Functions/ConfigSaver.h"
 
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "dwmapi.lib")

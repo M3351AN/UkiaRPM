@@ -3,7 +3,6 @@
 #include <mutex>
 
 #include "../../CSSx64.h"
-#include "../config.h"
 
 namespace Sonar {
 struct SoundParams {

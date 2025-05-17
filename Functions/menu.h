@@ -1,4 +1,4 @@
-#include "config.h"
+#include "ConfigSaver.h"
 
 namespace Menu {
 void DrawMenu() {
@@ -165,38 +165,132 @@ void DrawMenu() {
 
     ImGui::BeginChild(XorStr("Info"), child_size);
     {
-      ImGui::LabelText(__DATE__, XorStr("last build:"));
-      ImGui::LabelText(std::to_string(CS_VERSION).c_str(),
-                       XorStr("build for version:"));
-      ImGui::LabelText(std::to_string(global::gameVersion).c_str(),
-                       XorStr("current version:"));
+      ImGui::Text(XorStr("last build: %s"), __DATE__);
+      ImGui::Text(XorStr("build for version: %s"),
+                  std::to_string(CS_VERSION).c_str());
+      ImGui::Text(XorStr("current version: %s"),
+                  std::to_string(global::gameVersion).c_str());
 #ifdef _MSC_VER
 #ifndef __clang__
-      ImGui::LabelText(std::to_string(_MSC_VER).c_str(),
-                       XorStr("complier: MSVC"));
+      ImGui::Text(XorStr("complier: MSVC %s"),std::to_string(_MSC_VER).c_str());
 #endif
 #endif
 #ifdef __clang__
-      ImGui::LabelText(std::to_string(__clang_major__).c_str(),
-                       XorStr("complier: Clang"));
+      ImGui::Text(XorStr("complier: Clang %s"),std::to_string(__clang_major__).c_str());
 #endif
-      ImGui::LabelText(getenv("USERNAME"), XorStr("copy licenced to:"));
-
-      ImGui::LabelText(std::format("0x{:X}", Memory::clientAddress).c_str(),
-                       "client base:");
-      ImGui::LabelText(std::format("0x{:X}", Memory::engineAddress).c_str(),
-                       "engine base:");
+      ImGui::Text(XorStr("copy licenced to: %s"), getenv("USERNAME"));
+      ImGui::Text(XorStr("client base: %s"), std::format("0x{:X}", Memory::clientAddress).c_str());
+      ImGui::Text(XorStr("engine base: %s"),std::format("0x{:X}", Memory::engineAddress).c_str());
     }
     ImGui::EndChild();
 
     ImGui::SameLine();
 
-    ImGui::BeginChild(XorStr("Menu"), child_size);
+ImGui::BeginChild(XorStr("Settings"), child_size);
     {
       static int nSelectedColor = 0;
+      static char configNameBuffer[128] = "NewConfig";
+      static char configAuthorBuffer[128] = "";
+      std::string configAuthorName;
+      static int selectedConfig = -1;
 
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                           ImVec2(ImGui::GetStyle().FramePadding.x, 0));
+
+      const std::string configDir = config::path;
+      static std::vector<std::string> configFiles;
+      std::vector<const char*> configFilesCStr;
+
+      configFiles.clear();
+      for (const auto& entry : std::filesystem::directory_iterator(configDir)) {
+        if (entry.is_regular_file() && entry.path().extension() == XorStr(".yaml")) {
+          configFiles.push_back(entry.path().filename().string());
+        }
+      }
+      for (const auto& file : configFiles) {
+        configFilesCStr.push_back(file.c_str());
+      }
+
+      const float CursorX = 10.f;
+      const float CurrentCursorX = ImGui::GetCursorPosX();
+      const float ComponentWidth = ImGui::GetColumnWidth() -
+                                   ImGui::GetStyle().ItemSpacing.x -
+                                   CursorX * 2;
+
+
+      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+      ImGui::TextDisabled(XorStr("list"));
+
+      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+      ImGui::SetNextItemWidth(ComponentWidth);
+      ImGui::ListBox(XorStr("##ConfigFiles"), &selectedConfig, configFilesCStr.data(),
+                     configFilesCStr.size());
+
+      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+      if (ImGui::Button(XorStr("Load")) &&
+          selectedConfig >= 0 && selectedConfig < configFiles.size()) {
+        std::string selectedConfigFile = configFiles[selectedConfig];
+        MyConfigSaver::LoadConfig(selectedConfigFile);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button(XorStr("Save")) &&
+          selectedConfig >= 0 && selectedConfig < configFiles.size()) {
+        std::string selectedConfigFile = configFiles[selectedConfig];
+        MyConfigSaver::SaveConfig(selectedConfigFile, configAuthorName);
+      }
+
+      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+      if (ImGui::Button(XorStr("Delete")) &&
+          selectedConfig >= 0 && selectedConfig < configFiles.size())
+        ImGui::OpenPopup(XorStr("##reallyDelete"));
+      if (ImGui::BeginPopup(XorStr("##reallyDelete"))) {
+        ImGui::TextUnformatted(XorStr("Are you sure?"));
+        if (ImGui::Button(XorStr("No"))) ImGui::CloseCurrentPopup();
+        ImGui::SameLine();
+        if (ImGui::Button(XorStr("Yes"))) {
+          std::string fullPath = configDir + "\\" + configFiles[selectedConfig];
+          if (std::remove(fullPath.c_str()) == 0) {
+            configFiles.erase(configFiles.begin() + selectedConfig);
+            selectedConfig = -1;
+          }
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
+      }
+
+      // 新建配置部分
+      ImGui::NewLine();
+      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+      ImGui::TextDisabled(XorStr("create"));
+
+      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+      ImGui::Text(XorStr("setting name"));
+      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+      ImGui::SetNextItemWidth(ComponentWidth + 8);
+      ImGui::InputText(XorStr("###ConfigNameInput"), configNameBuffer,
+                       sizeof(configNameBuffer));
+
+      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+      ImGui::Text(XorStr("author"));
+      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+      ImGui::SetNextItemWidth(ComponentWidth + 8);
+      ImGui::InputText(XorStr("###AuthorNameInput"), configAuthorBuffer,
+                       sizeof(configAuthorBuffer));
+
+      // 底部按钮
+      ImGui::NewLine();
+      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+      if (ImGui::Button(XorStr("Create"))) {
+        std::string configFileName = std::string(configNameBuffer) + XorStr(".yaml");
+        configAuthorName = std::string(configAuthorBuffer);
+        
+        MyConfigSaver::SaveConfig(configFileName, configAuthorName);
+      }
+      ImGui::SameLine();
+      if (ImGui::Button(XorStr("Open folder"))) {
+        ShellExecuteA(NULL, XorStr("open"), configDir.c_str(), NULL, NULL,
+                      SW_SHOWNORMAL);
+      }
 
       ImGui::PopStyleVar();
     }
@@ -204,7 +298,7 @@ void DrawMenu() {
 
     ImGui::SameLine();
 
-    ImGui::BeginChild(XorStr("Configs"), child_size);
+    ImGui::BeginChild(XorStr("Miscs"), child_size);
     {
       if (ImGui::Button(XorStr("Unhook"))) {
         global::isRunning = false;

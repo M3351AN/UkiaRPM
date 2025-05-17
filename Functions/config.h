@@ -1,16 +1,15 @@
 #pragma once
 
-struct RGB {
-  int r;
-  int g;
-  int b;
-
-  // Conversion function from RGB to COLORREF
-  operator COLORREF() const { return RGB(r, g, b); }
-};
+#define AUTO_CONFIG_VARS  \
+  X(ESP, bool)            \
+  X(Sonar, bool)          \
+  X(PitchIndicator, bool) \
+  X(InfoString, bool)
 
 namespace config {
-bool ShowMenu = false;
+inline std::string path = "";
+inline std::string author = "";
+inline bool ShowMenu = false;
 bool ESP = true;
 bool Sonar = false;
 bool PitchIndicator = true;

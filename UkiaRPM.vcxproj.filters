@@ -28,6 +28,9 @@
     <Filter Include="头文件\Functions\Visuals">
       <UniqueIdentifier>{110944b5-c3bc-494a-84fb-aa79b1dadfbe}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Utils\yaml-cpp">
+      <UniqueIdentifier>{23cb46c3-1829-4a0f-bfd1-3298f506fbf5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="源.cc">
@@ -121,6 +124,66 @@
     </ClInclude>
     <ClInclude Include="Functions\menu.h">
       <Filter>头文件\Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\ConfigSaver.h">
+      <Filter>头文件\Functions</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\anchor.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\binary.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\depthguard.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\dll.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\emitfromevents.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\emitter.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\emitterdef.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\emittermanip.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\emitterstyle.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\eventhandler.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\exceptions.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\mark.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\noexcept.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\null.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\ostream_wrapper.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\parser.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\stlemitter.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\traits.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\yaml-cpp\yaml.h">
+      <Filter>头文件\Utils\yaml-cpp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -559,6 +559,26 @@ int Mian() {
     return -1;
   }
 
+  char documentsPath[MAX_PATH];
+  if (SHGetFolderPathA(NULL, CSIDL_PERSONAL, NULL, 0, documentsPath) != S_OK) {
+    MessageBoxA(nullptr, XorStr("Failed to get the Documents folder path."),
+                XorStr("UkiaRPM Error"), MB_ICONERROR);
+    Ukia::UkiaExit();
+  }
+  config::path = documentsPath;
+  config::path += XorStr("\\UkiaRPM-CSS");
+  if (std::filesystem::exists(config::path)) {
+    printf(XorStr("Config folder connected: %s\n"), config::path.c_str());
+  } else {
+    if (std::filesystem::create_directories(config::path)) {
+      printf(XorStr("Config folder created: %s\n"), config::path.c_str());
+    } else {
+      MessageBoxA(nullptr, XorStr("Failed to create the config directory."),
+                  XorStr("UkiaRPM Error"), MB_ICONERROR);
+      Ukia::UkiaExit();
+    }
+  }
+
   global::isRunning = true;
 
   if (!WaitForGameFocus()) {
