@@ -114,6 +114,7 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT Message, WPARAM wParam,
   return 0;
 }
 
+std::mutex g_d3dMutex;
 struct WindowStateTracker {
   RECT oldRect = {0};
   bool lastMenuState = false;
@@ -175,6 +176,7 @@ void ProcessMessageQueue() {
 }
 
 void SyncOverlayPosition(WindowStateTracker& stateTracker) {
+  std::lock_guard<std::mutex> lock(g_d3dMutex);
   RECT clientRect;
   GetClientRect(global::hwnd_, &clientRect);
   POINT clientPos{0};
@@ -195,6 +197,8 @@ void SyncOverlayPosition(WindowStateTracker& stateTracker) {
     global::screenSize.y = clientRect.bottom;
     stateTracker.oldRect = {0, 0, clientRect.right, clientRect.bottom};
 
+    global::screenSize.x = clientRect.right;
+    global::screenSize.y = clientRect.bottom;
 
     DirectX9Interface::pParams.BackBufferWidth = global::screenSize.x;
     DirectX9Interface::pParams.BackBufferHeight = global::screenSize.y;
@@ -238,6 +242,7 @@ void HandlePresentResult(HRESULT result) {
 }
 
 void RenderFrame() {
+  std::lock_guard<std::mutex> lock(g_d3dMutex);
   ImGui_ImplDX9_NewFrame();
   ImGui_ImplWin32_NewFrame();
   ImGui::NewFrame();
@@ -350,9 +355,9 @@ bool DirectXInit() {
   ImGui_ImplWin32_EnableDpiAwareness();
   ImGui_ImplWin32_Init(OverlayWindow::Hwnd);
   ImGui_ImplDX9_Init(DirectX9Interface::pDevice);
-  DirectX9Interface::Direct3D9->Release();
   LoadTextureFromMemory(DirectX9Interface::pDevice, ShigureImg,
                         sizeof(ShigureImg), &global::Shigure);
+  DirectX9Interface::Direct3D9->Release();
   return true;
 }
 
