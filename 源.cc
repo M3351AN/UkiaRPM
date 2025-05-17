@@ -95,14 +95,16 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT Message, WPARAM wParam,
         DirectX9Interface::Direct3D9->Release();
       }
       PostQuitMessage(0);
-      exit(4);
+      Ukia::UkiaExit(4);
       break;
+    case WM_MOVE:
     case WM_SIZE:
       if (DirectX9Interface::pDevice != NULL && wParam != SIZE_MINIMIZED) {
-        ImGui_ImplDX9_InvalidateDeviceObjects();
-        DirectX9Interface::pParams.BackBufferWidth = LOWORD(lParam);
-        DirectX9Interface::pParams.BackBufferHeight = HIWORD(lParam);
-        ImGui_ImplDX9_CreateDeviceObjects();
+        if (LOWORD(lParam) > 0 && HIWORD(lParam) > 0) {
+          ImGui_ImplDX9_InvalidateDeviceObjects();
+          DirectX9Interface::pParams.BackBufferWidth = LOWORD(lParam);
+          DirectX9Interface::pParams.BackBufferHeight = HIWORD(lParam);
+        }
       }
       break;
     default:
@@ -143,18 +145,14 @@ bool HandleFocusState(bool& wasFocused) {
 void SyncMenuState(bool& lastState) {
   if (config::ShowMenu == lastState) return;
 
-  // 确保窗口层级正确
   DWORD newExStyle = WS_EX_TOPMOST | WS_EX_LAYERED;
   newExStyle |= config::ShowMenu ? 0 : WS_EX_TRANSPARENT;
 
-  // 使用更可靠的窗口属性更新方式
   SetWindowLongPtr(OverlayWindow::Hwnd, GWL_EXSTYLE, newExStyle);
 
-  // 强制刷新窗口属性
   SetWindowPos(OverlayWindow::Hwnd, HWND_TOPMOST, 0, 0, 0, 0,
                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 
-  // 焦点处理优化
   if (!config::ShowMenu) {
     SetForegroundWindow(global::hwnd_);
     SetActiveWindow(global::hwnd_);
@@ -175,24 +173,31 @@ void ProcessMessageQueue() {
     DispatchMessage(&msg);
   }
 }
-void SyncOverlayPosition(RECT& oldRect) {
-  POINT clientPos{0};
-  RECT clientRect{0};
 
+void SyncOverlayPosition(WindowStateTracker& stateTracker) {
+  RECT clientRect;
   GetClientRect(global::hwnd_, &clientRect);
+  POINT clientPos{0};
   ClientToScreen(global::hwnd_, &clientPos);
 
-  if (memcmp(&oldRect, &clientRect, sizeof(RECT)) != 0) {
-    oldRect = clientRect;
+  bool positionChanged = (clientPos.x != stateTracker.oldRect.left) ||
+                         (clientPos.y != stateTracker.oldRect.top);
+  bool sizeChanged =
+      (clientRect.right - clientRect.left != stateTracker.oldRect.right) ||
+      (clientRect.bottom - clientRect.top != stateTracker.oldRect.bottom);
+
+  if (positionChanged || sizeChanged) {
+    SetWindowPos(OverlayWindow::Hwnd, HWND_TOPMOST, clientPos.x, clientPos.y,
+                 clientRect.right, clientRect.bottom,
+                 SWP_NOZORDER | SWP_NOACTIVATE);
+
     global::screenSize.x = clientRect.right;
     global::screenSize.y = clientRect.bottom;
+    stateTracker.oldRect = {0, 0, clientRect.right, clientRect.bottom};
+
 
     DirectX9Interface::pParams.BackBufferWidth = global::screenSize.x;
     DirectX9Interface::pParams.BackBufferHeight = global::screenSize.y;
-
-    SetWindowPos(OverlayWindow::Hwnd, HWND_TOPMOST, clientPos.x, clientPos.y,
-                 global::screenSize.x, global::screenSize.y,
-                 SWP_NOZORDER | SWP_NOACTIVATE);
   }
 }
 
@@ -297,7 +302,7 @@ void MainLoop() {
 
     ProcessMessageQueue();
 
-    SyncOverlayPosition(stateTracker.oldRect);
+    SyncOverlayPosition(stateTracker);
 
     UpdateInputState();
 
@@ -394,7 +399,7 @@ void SetupWindow() {
         global::screenPos.x, global::screenPos.y, global::screenSize.x,
         global::screenSize.y, NULL, NULL, wc.hInstance, NULL, ZBID_UIACCESS);
   }
-  SetParent(global::hwnd_, OverlayWindow::Hwnd);
+
   DwmExtendFrameIntoClientArea(OverlayWindow::Hwnd, &DirectX9Interface::Margin);
   SetWindowLong(OverlayWindow::Hwnd, GWL_EXSTYLE,
                 WS_EX_LAYERED | WS_EX_TRANSPARENT);
