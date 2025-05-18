@@ -166,10 +166,6 @@ void SyncMenuState(bool& lastState) {
 void ProcessMessageQueue() {
   MSG msg;
   while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE)) {
-    if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST) {
-      ImGui_ImplWin32_WndProcHandler(msg.hwnd, msg.message, msg.wParam,
-                                     msg.lParam);
-    }
     TranslateMessage(&msg);
     DispatchMessage(&msg);
   }
