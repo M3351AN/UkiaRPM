@@ -304,6 +304,7 @@ void DrawMenu() {
     ImGui::BeginChild(XorStr("Miscs"), child_size);
     {
       ImGui::Checkbox(XorStr("team check"), &config::TeamCheck);
+      ImGui::Checkbox(XorStr("bypass capture"), &config::BypassCapture);
       if (ImGui::Button(XorStr("Unhook"))) {
         global::isRunning = false;
       }

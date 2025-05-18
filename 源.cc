@@ -284,6 +284,11 @@ void MainLoop() {
   while (msg.message != WM_QUIT) {
     if (!global::isRunning) break;
 
+    if (config::BypassCapture)
+      SetWindowDisplayAffinity(OverlayWindow::Hwnd, WDA_EXCLUDEFROMCAPTURE);
+    else
+      SetWindowDisplayAffinity(OverlayWindow::Hwnd, WDA_NONE);
+
     stateTracker.UpdateWindowState([&]() {
       const bool isFullscreen = Ukia::IsFullscreen(global::hwnd_);
       if (isFullscreen != stateTracker.lastFullscreen) {

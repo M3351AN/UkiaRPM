@@ -9,7 +9,8 @@
   X(Sonar, bool)           \
   X(PitchIndicator, bool)  \
   X(InfoString, bool)      \
-  X(TeamCheck, bool)
+  X(TeamCheck, bool)       \
+  X(BypassCapture, bool)
 
 namespace config {
 inline std::string path = "";
@@ -23,4 +24,5 @@ bool Sonar = false;
 bool PitchIndicator = true;
 bool InfoString = true;
 bool TeamCheck = true;
+bool BypassCapture = false;
 }  // namespace config
