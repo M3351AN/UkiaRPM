@@ -192,7 +192,11 @@ class Entity {
            data.life_state == 0;
   }
 
-  bool IsEnemy(int local_team) const { return data.team != local_team; }
+  bool IsEnemy(int local_team) const {
+    if (index == 0) return false;//it's local player
+    if (!config::TeamCheck) return true;
+    return (data.team != local_team);
+  }
 
   float DistanceTo(const Vector3& other) const {
     return std::sqrt(std::pow(data.position.x - other.x, 2) +

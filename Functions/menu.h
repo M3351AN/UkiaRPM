@@ -83,7 +83,11 @@ void DrawMenu() {
                           ImVec2(style.FramePadding.x, 0));
 
       ImGui::Checkbox(XorStr("ESP"), &config::ESP);
-
+      ImGui::SliderFloat(XorStr("dormant time"), &config::ESPDormantTime, 0.f,
+                         10.f, XorStr("%.1f s"));
+      ImGui::Checkbox(XorStr("player info"), &config::ESPInfo);
+      ImGui::Checkbox(XorStr("box"), &config::ESPBox);
+      ImGui::Checkbox(XorStr("player name"), &config::ESPName);
       ImGui::PopStyleVar();
 
       flOverlayChildSize = ImGui::GetCursorPosY() + style.ItemSpacing.y;
@@ -172,21 +176,25 @@ void DrawMenu() {
                   std::to_string(global::gameVersion).c_str());
 #ifdef _MSC_VER
 #ifndef __clang__
-      ImGui::Text(XorStr("complier: MSVC %s"),std::to_string(_MSC_VER).c_str());
+      ImGui::Text(XorStr("complier: MSVC %s"),
+                  std::to_string(_MSC_VER).c_str());
 #endif
 #endif
 #ifdef __clang__
-      ImGui::Text(XorStr("complier: Clang %s"),std::to_string(__clang_major__).c_str());
+      ImGui::Text(XorStr("complier: Clang %s"),
+                  std::to_string(__clang_major__).c_str());
 #endif
       ImGui::Text(XorStr("copy licenced to: %s"), getenv("USERNAME"));
-      ImGui::Text(XorStr("client base: %s"), std::format("0x{:X}", Memory::clientAddress).c_str());
-      ImGui::Text(XorStr("engine base: %s"),std::format("0x{:X}", Memory::engineAddress).c_str());
+      ImGui::Text(XorStr("client base: %s"),
+                  std::format("0x{:X}", Memory::clientAddress).c_str());
+      ImGui::Text(XorStr("engine base: %s"),
+                  std::format("0x{:X}", Memory::engineAddress).c_str());
     }
     ImGui::EndChild();
 
     ImGui::SameLine();
 
-ImGui::BeginChild(XorStr("Settings"), child_size);
+    ImGui::BeginChild(XorStr("Settings"), child_size);
     {
       static int nSelectedColor = 0;
       static char configNameBuffer[128] = "NewConfig";
@@ -203,7 +211,8 @@ ImGui::BeginChild(XorStr("Settings"), child_size);
 
       configFiles.clear();
       for (const auto& entry : std::filesystem::directory_iterator(configDir)) {
-        if (entry.is_regular_file() && entry.path().extension() == XorStr(".yaml")) {
+        if (entry.is_regular_file() &&
+            entry.path().extension() == XorStr(".yaml")) {
           configFiles.push_back(entry.path().filename().string());
         }
       }
@@ -223,21 +232,21 @@ ImGui::BeginChild(XorStr("Settings"), child_size);
                      configFilesCStr.data(), configFilesCStr.size(), 5);
 
       ImGui::SetCursorPosX(CurrentCursorX + CursorX);
-      if (ImGui::Button(XorStr("Load")) &&
-          selectedConfig >= 0 && selectedConfig < configFiles.size()) {
+      if (ImGui::Button(XorStr("Load")) && selectedConfig >= 0 &&
+          selectedConfig < configFiles.size()) {
         std::string selectedConfigFile = configFiles[selectedConfig];
         MyConfigSaver::LoadConfig(selectedConfigFile);
       }
       ImGui::SameLine();
-      if (ImGui::Button(XorStr("Save")) &&
-          selectedConfig >= 0 && selectedConfig < configFiles.size()) {
+      if (ImGui::Button(XorStr("Save")) && selectedConfig >= 0 &&
+          selectedConfig < configFiles.size()) {
         std::string selectedConfigFile = configFiles[selectedConfig];
         MyConfigSaver::SaveConfig(selectedConfigFile, configAuthorName);
       }
 
       ImGui::SetCursorPosX(CurrentCursorX + CursorX);
-      if (ImGui::Button(XorStr("Delete")) &&
-          selectedConfig >= 0 && selectedConfig < configFiles.size())
+      if (ImGui::Button(XorStr("Delete")) && selectedConfig >= 0 &&
+          selectedConfig < configFiles.size())
         ImGui::OpenPopup(XorStr("##reallyDelete"));
       if (ImGui::BeginPopup(XorStr("##reallyDelete"))) {
         ImGui::TextUnformatted(XorStr("Are you sure?"));
@@ -274,9 +283,10 @@ ImGui::BeginChild(XorStr("Settings"), child_size);
       ImGui::NewLine();
       ImGui::SetCursorPosX(CurrentCursorX + CursorX);
       if (ImGui::Button(XorStr("Create"))) {
-        std::string configFileName = std::string(configNameBuffer) + XorStr(".yaml");
+        std::string configFileName =
+            std::string(configNameBuffer) + XorStr(".yaml");
         configAuthorName = std::string(configAuthorBuffer);
-        
+
         MyConfigSaver::SaveConfig(configFileName, configAuthorName);
       }
       ImGui::SameLine();
@@ -293,6 +303,7 @@ ImGui::BeginChild(XorStr("Settings"), child_size);
 
     ImGui::BeginChild(XorStr("Miscs"), child_size);
     {
+      ImGui::Checkbox(XorStr("team check"), &config::TeamCheck);
       if (ImGui::Button(XorStr("Unhook"))) {
         global::isRunning = false;
       }

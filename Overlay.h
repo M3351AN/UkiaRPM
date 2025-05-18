@@ -25,6 +25,7 @@ typedef struct {
 } RGBA;
 RGBA White = {255, 255, 255, 255};
 RGBA Grey = {155, 155, 155, 255};
+RGBA Green = {0, 255, 0, 255};
 struct Vector2 {
   float x, y;
 };
@@ -125,7 +126,7 @@ void DrawRect(int x, int y, int w, int h, RGBA* color, int thickness) {
                                        0, 0, thickness);
 }
 
-void DrawEspBox2D(Vector3 feet, Vector3 head, RGBA* color, int thickness) {
+void DrawEspBox2D(Vector2 feet, Vector2 head, RGBA* color, int thickness) {
   float t = feet.x - head.x;
   float height = feet.y - head.y;
   float pd = feet.x + t;
@@ -147,11 +148,11 @@ void DrawEspBox2D(Vector3 feet, Vector3 head, RGBA* color, int thickness) {
                     ImColor(0, 0, 0, 255), 0.0f, 0, thickness);
 }
 
-void DrawNameTag(Vector3 feet, Vector3 head, char* name) {
+void DrawNameTag(Vector2 feet, Vector2 head, char* name) {
   float t = feet.x - head.x;
   float pd = feet.x + t;
 
-  ImVec2 boxMin(head.x, head.y);
+  ImVec2 boxMin(head.x - 5, head.y);
   ImVec2 boxMax(pd, feet.y);
 
   const ImVec2 textSize = ImGui::CalcTextSize(name);
