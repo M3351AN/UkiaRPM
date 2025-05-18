@@ -8,7 +8,6 @@
 
 namespace config {
 inline std::string path = "";
-inline std::string author = "";
 inline bool ShowMenu = false;
 bool ESP = true;
 bool Sonar = false;
