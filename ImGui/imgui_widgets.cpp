@@ -2918,86 +2918,123 @@ bool ImGui::SliderBehavior(const ImRect& bb, ImGuiID id, ImGuiDataType data_type
 
 // Note: p_data, p_min and p_max are _pointers_ to a memory address holding the data. For a slider, they are all required.
 // Read code of e.g. SliderFloat(), SliderInt() etc. or examples in 'Demo->Widgets->Data Types' to understand how to use this function directly.
-bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type, void* p_data, const void* p_min, const void* p_max, const char* format, ImGuiSliderFlags flags)
-{
-    ImGuiWindow* window = GetCurrentWindow();
-    if (window->SkipItems)
-        return false;
+bool ImGui::SliderScalar(const char* label, ImGuiDataType data_type,
+                         void* p_data, const void* p_min, const void* p_max,
+                         const char* format, ImGuiSliderFlags flags) {
+  ImGuiWindow* window = GetCurrentWindow();
+  if (window->SkipItems) return false;
 
-    ImGuiContext& g = *GImGui;
-    const ImGuiStyle& style = g.Style;
-    const ImGuiID id = window->GetID(label);
-    const float w = CalcItemWidth();
+  ImGuiContext& g = *GImGui;
+  const ImGuiStyle& style = g.Style;
+  const ImGuiID id = window->GetID(label);
+  const float w = GetColumnWidth();
 
-    const ImVec2 label_size = CalcTextSize(label, NULL, true);
-    const ImRect frame_bb(window->DC.CursorPos, window->DC.CursorPos + ImVec2(w, label_size.y + style.FramePadding.y * 2.0f));
-    const ImRect total_bb(frame_bb.Min, frame_bb.Max + ImVec2(label_size.x > 0.0f ? style.ItemInnerSpacing.x + label_size.x : 0.0f, 0.0f));
+  const ImVec2 label_size = CalcTextSize(label, NULL, true);
+  const ImRect frame_bb(
+      window->DC.CursorPos,
+      window->DC.CursorPos +
+          ImVec2(w - 10.f, label_size.y + style.FramePadding.y +
+                               style.ItemInnerSpacing.y * 3.f));
+  const ImRect total_bb(frame_bb.Min, frame_bb.Max);
 
-    const bool temp_input_allowed = (flags & ImGuiSliderFlags_NoInput) == 0;
-    ItemSize(total_bb, style.FramePadding.y);
-    if (!ItemAdd(total_bb, id, &frame_bb, temp_input_allowed ? ImGuiItemAddFlags_Focusable : 0))
-        return false;
+  const bool temp_input_allowed = (flags & ImGuiSliderFlags_NoInput) == 0;
+  ItemSize(total_bb, style.FramePadding.y);
+  if (!ItemAdd(total_bb, id, &frame_bb,ImGuiItemFlags_None))
+    return false;
 
-    // Default format string when passing NULL
-    if (format == NULL)
-        format = DataTypeGetInfo(data_type)->PrintFmt;
-    else if (data_type == ImGuiDataType_S32 && strcmp(format, "%d") != 0) // (FIXME-LEGACY: Patch old "%.0f" format string to use "%d", read function more details.)
-        format = PatchFormatStringFloatToInt(format);
+  // Default format string when passing NULL
+  if (format == NULL) format = DataTypeGetInfo(data_type)->PrintFmt;
 
-    // Tabbing or CTRL-clicking on Slider turns it into an input box
-    const bool hovered = ItemHoverable(frame_bb, id);
-    bool temp_input_is_active = temp_input_allowed && TempInputIsActive(id);
-    if (!temp_input_is_active)
-    {
-        const bool focus_requested = temp_input_allowed && (window->DC.LastItemStatusFlags & ImGuiItemStatusFlags_Focused) != 0;
-        const bool clicked = (hovered && g.IO.MouseClicked[0]);
-        if (focus_requested || clicked || g.NavActivateId == id || g.NavInputId == id)
-        {
-            SetActiveID(id, window);
-            SetFocusID(id, window);
-            FocusWindow(window);
-            g.ActiveIdUsingNavDirMask |= (1 << ImGuiDir_Left) | (1 << ImGuiDir_Right);
-            if (temp_input_allowed && (focus_requested || (clicked && g.IO.KeyCtrl) || g.NavInputId == id))
-                temp_input_is_active = true;
-        }
+  // Tabbing or CTRL-clicking on Slider turns it into an input box
+  const bool hovered = ItemHoverable(frame_bb, id);
+  bool temp_input_is_active = temp_input_allowed && TempInputIsActive(id);
+  if (!temp_input_is_active) {
+    const bool focus_requested =
+        temp_input_allowed &&
+        (window->DC.LastItemStatusFlags & ImGuiItemStatusFlags_Focused) != 0;
+    const bool clicked = (hovered && g.IO.MouseClicked[0]);
+    if (focus_requested || clicked || g.NavActivateId == id ||
+        g.NavInputId == id) {
+      SetActiveID(id, window);
+      SetFocusID(id, window);
+      FocusWindow(window);
+      g.ActiveIdUsingNavDirMask |= (1 << ImGuiDir_Left) | (1 << ImGuiDir_Right);
+      if (temp_input_allowed &&
+          (focus_requested || (clicked && g.IO.KeyCtrl) || g.NavInputId == id))
+        temp_input_is_active = true;
     }
+  }
 
-    if (temp_input_is_active)
-    {
-        // Only clamp CTRL+Click input when ImGuiSliderFlags_AlwaysClamp is set
-        const bool is_clamp_input = (flags & ImGuiSliderFlags_AlwaysClamp) != 0;
-        return TempInputScalar(frame_bb, id, label, data_type, p_data, format, is_clamp_input ? p_min : NULL, is_clamp_input ? p_max : NULL);
-    }
+  if (temp_input_is_active) {
+    // Only clamp CTRL+Click input when ImGuiSliderFlags_AlwaysClamp is set
+    const bool is_clamp_input = (flags & ImGuiSliderFlags_AlwaysClamp) != 0;
+    return TempInputScalar(frame_bb, id, label, data_type, p_data, format,
+                           is_clamp_input ? p_min : NULL,
+                           is_clamp_input ? p_max : NULL);
+  }
 
-    // Draw frame
-    const ImU32 frame_col = GetColorU32(g.ActiveId == id ? ImGuiCol_FrameBgActive : g.HoveredId == id ? ImGuiCol_FrameBgHovered : ImGuiCol_FrameBg);
-    RenderNavHighlight(frame_bb, id);
-    RenderFrame(frame_bb.Min, frame_bb.Max, frame_col, true, g.Style.FrameRounding);
+  // Draw frame
+  struct slider_animation {
+    float thumb_position;
+    ImColor slider_frame;
+  };
 
-    // Slider behavior
-    ImRect grab_bb;
-    const bool value_changed = SliderBehavior(frame_bb, id, data_type, p_data, p_min, p_max, format, flags, &grab_bb);
-    if (value_changed)
-        MarkItemEdited(id);
+  static std::map<ImGuiID, slider_animation> tab_map;
 
-    // Render grab
-    if (grab_bb.Max.x > grab_bb.Min.x)
-        window->DrawList->AddRectFilled(grab_bb.Min, grab_bb.Max, GetColorU32(g.ActiveId == id ? ImGuiCol_SliderGrabActive : ImGuiCol_SliderGrab), style.GrabRounding);
+  auto tab_map_item = tab_map.find(id);
+  if (tab_map_item == tab_map.end()) {
+    tab_map.insert({id, slider_animation()});
+    tab_map_item = tab_map.find(id);
 
-    // Display value using user-provided display format so user can add prefix/suffix/decorations to the value.
+    tab_map_item->second.slider_frame = (ImColor)GetColorU32(ImGuiCol_FrameBg);
+  }
+
+  tab_map_item->second.slider_frame =
+      ImLerp(tab_map_item->second.slider_frame,
+             hovered ? (ImVec4)(ImColor)GetColorU32(ImGuiCol_FrameBgHovered)
+                     : (ImVec4)(ImColor)GetColorU32(ImGuiCol_FrameBg),
+             std::min(1.0f, g.IO.DeltaTime * 8.f));
+
+  if (label_size.x > 0.0f) {
+    RenderText(total_bb.Min, label);
+
     char value_buf[64];
-    const char* value_buf_end = value_buf + DataTypeFormatString(value_buf, IM_ARRAYSIZE(value_buf), data_type, p_data, format);
-    if (g.LogEnabled)
-        LogSetNextTextDecoration("{", "}");
-    RenderTextClipped(frame_bb.Min, frame_bb.Max, value_buf, value_buf_end, NULL, ImVec2(0.5f, 0.5f));
+    const char* value_buf_end =
+        value_buf + DataTypeFormatString(value_buf, IM_ARRAYSIZE(value_buf),
+                                         data_type, p_data, format);
 
-    if (label_size.x > 0.0f)
-        RenderText(ImVec2(frame_bb.Max.x + style.ItemInnerSpacing.x, frame_bb.Min.y + style.FramePadding.y), label);
+    RenderText(
+        ImVec2(total_bb.Max.x - CalcTextSize(value_buf).x, total_bb.Min.y),
+        value_buf);
+  }
 
-    IMGUI_TEST_ENGINE_ITEM_INFO(id, label, window->DC.LastItemStatusFlags);
-    return value_changed;
+  ImRect grab_bb;
+  const bool value_changed = SliderBehavior(
+      ImRect(frame_bb.Min - ImVec2(13.f, 0.f), frame_bb.Max + ImVec2(7.f, 0.f)),
+      id, data_type, p_data, p_min, p_max, format, flags, &grab_bb);
+  if (value_changed) MarkItemEdited(id);
+
+  if (hovered || IsItemActive())
+    tab_map_item->second.thumb_position =
+        ImLerp(tab_map_item->second.thumb_position, grab_bb.Max.x,
+               std::min(1.0f, g.IO.DeltaTime * 15.f));
+  else
+    tab_map_item->second.thumb_position = grab_bb.Max.x;
+
+  RenderFrame(ImVec2(total_bb.Min.x, total_bb.Min.y + label_size.y + 7.f),
+              ImVec2(total_bb.Max.x, total_bb.Min.y + label_size.y + 12.f),
+              GetColorU32(tab_map_item->second.slider_frame.Value), true, 0.f);
+  RenderFrame(ImVec2(total_bb.Min.x, total_bb.Min.y + label_size.y + 7.f),
+              ImVec2(tab_map_item->second.thumb_position,
+                     total_bb.Min.y + label_size.y + 12.f),
+              GetColorU32(ImGuiCol_FrameBgActive), true, 0.f);
+
+  IMGUI_TEST_ENGINE_ITEM_INFO(
+      id, label,
+      g.LastItemData.StatusFlags |
+          (temp_input_allowed ? ImGuiItemStatusFlags_Inputable : 0));
+  return value_changed;
 }
-
 // Add multiple sliders on 1 line for compact edition of multiple components
 bool ImGui::SliderScalarN(const char* label, ImGuiDataType data_type, void* v, int components, const void* v_min, const void* v_max, const char* format, ImGuiSliderFlags flags)
 {
