@@ -217,14 +217,10 @@ ImGui::BeginChild(XorStr("Settings"), child_size);
                                    ImGui::GetStyle().ItemSpacing.x -
                                    CursorX * 2;
 
-
-      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
-      ImGui::TextDisabled(XorStr("list"));
-
       ImGui::SetCursorPosX(CurrentCursorX + CursorX);
       ImGui::SetNextItemWidth(ComponentWidth);
-      ImGui::ListBox(XorStr("##ConfigFiles"), &selectedConfig, configFilesCStr.data(),
-                     configFilesCStr.size());
+      ImGui::ListBox(XorStr("##ConfigFiles"), &selectedConfig,
+                     configFilesCStr.data(), configFilesCStr.size(), 5);
 
       ImGui::SetCursorPosX(CurrentCursorX + CursorX);
       if (ImGui::Button(XorStr("Load")) &&
@@ -258,8 +254,6 @@ ImGui::BeginChild(XorStr("Settings"), child_size);
         ImGui::EndPopup();
       }
 
-      // 新建配置部分
-      ImGui::NewLine();
       ImGui::SetCursorPosX(CurrentCursorX + CursorX);
       ImGui::TextDisabled(XorStr("create"));
 
@@ -277,7 +271,6 @@ ImGui::BeginChild(XorStr("Settings"), child_size);
       ImGui::InputText(XorStr("###AuthorNameInput"), configAuthorBuffer,
                        sizeof(configAuthorBuffer));
 
-      // 底部按钮
       ImGui::NewLine();
       ImGui::SetCursorPosX(CurrentCursorX + CursorX);
       if (ImGui::Button(XorStr("Create"))) {
