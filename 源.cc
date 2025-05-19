@@ -4,18 +4,12 @@
 #include <windows.h>
 
 #include <array>
-#include <atomic>
-#include <chrono>
 #include <cmath>
 #include <execution>
 #include <filesystem>
-#include <iomanip>
-#include <iostream>
 #include <limits>
-#include <mutex>
 #include <thread>
 #include <unordered_map>
-#include <vector>
 
 #include "Functions/Func.h"
 #include "Utils/uiaccess.h"

@@ -46,7 +46,7 @@ constexpr int kPadding = CompileTimeSeed();
 #define SeDebugPriv 20
 #define NT_SUCCESS(Status) (((NTSTATUS)(Status)) >= 0)
 #define STATUS_INFO_LENGTH_MISMATCH ((NTSTATUS)0xC0000004)
-#define NtCurrentProcess ((HANDLE)(LONG_PTR)-1)
+#define NtCurrentProcess ((HANDLE)(LONG_PTR) - 1)
 #define ProcessHandleType 0x7
 #define SystemHandleInformation 16
 
@@ -638,28 +638,25 @@ BOOL UkiaWriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress,
     return TRUE;
   }
 
+  if (status == 0xC0000005)  // STATUS_ACCESS_VIOLATION
+    SetLastError(ERROR_NOACCESS);
+  if (status == 0xC0000022)  // STATUS_ACCESS_DENIED
+    SetLastError(ERROR_ACCESS_DENIED);
+  if (status == 0x8000000D)
+    SetLastError(ERROR_WRITE_FAULT);
+  else {
+    using RtlNtStatusToDosErrorFn = ULONG(WINAPI*)(NTSTATUS);
+    static auto RtlNtStatusToDosError =
+        reinterpret_cast<RtlNtStatusToDosErrorFn>(
+            GetProcAddress(GetModuleHandleA(XorStr("ntdll.dll")),
+                           XorStr("RtlNtStatusToDosError")));
 
-
-    if (status == 0xC0000005)  // STATUS_ACCESS_VIOLATION
-      SetLastError(ERROR_NOACCESS);
-    if (status == 0xC0000022) // STATUS_ACCESS_DENIED
-      SetLastError(ERROR_ACCESS_DENIED);
-    if (status == 0x8000000D)
-      SetLastError(ERROR_WRITE_FAULT);
-    else {
-      using RtlNtStatusToDosErrorFn = ULONG(WINAPI*)(NTSTATUS);
-      static auto RtlNtStatusToDosError =
-          reinterpret_cast<RtlNtStatusToDosErrorFn>(
-              GetProcAddress(GetModuleHandleA(XorStr("ntdll.dll")),
-                             XorStr("RtlNtStatusToDosError")));
-
-      if (RtlNtStatusToDosError) {
-        SetLastError(RtlNtStatusToDosError(status));
-      } else {
-        SetLastError(ERROR_UNIDENTIFIED_ERROR);
-      }
+    if (RtlNtStatusToDosError) {
+      SetLastError(RtlNtStatusToDosError(status));
+    } else {
+      SetLastError(ERROR_UNIDENTIFIED_ERROR);
     }
-
+  }
 
   return FALSE;
 }

@@ -3,6 +3,11 @@
 #include <d3d9.h>
 #include <dwmapi.h>
 
+#include <atomic>
+#include <chrono>
+#include <iostream>
+#include <mutex>
+
 #include "Overlay.h"
 #include "UkiaStuff.h"
 #include "Utils/XorStr.h"
@@ -193,7 +198,7 @@ class Entity {
   }
 
   bool IsEnemy(int local_team) const {
-    if (index == 0) return false;//it's local player
+    if (index == 0) return false;  // it's local player
     if (!config::TeamCheck) return true;
     return (data.team != local_team);
   }
