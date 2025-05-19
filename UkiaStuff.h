@@ -183,6 +183,19 @@ std::string getRandomPoem() {
       "\xE6\xB9\x96",  // ºþ
       "\xE6\xB8\x9F",  // œs
       "\xE4\xBA\x91",  // ÔÆ
+      "\xE6\x98\x9F",  // ÐÇ
+      "\xE6\x9C\x88",  // ÔÂ
+      "\xE6\x99\xAF",  // ¾°
+      "\xE7\x94\x9F",  // Éú
+      "\xE6\xA2\x85",  // Ã·
+      "\xE6\x9F\xB3",  // Áø
+      "\xE8\x93\x89",  // Á«
+      "\xE5\xAE\x87",  // Óî
+      "\xE5\xAE\x99",  // Öæ
+      "\xE6\x98\xA5",  // ´º
+      "\xE5\xA4\x8F",  // ÏÄ
+      "\xE7\xA7\x8B",  // Çï
+      "\xE5\x86\xAC",  // ¶¬
       "\xE5\xB1\xB1",  // É½
       "\xE6\xB0\xB4"   // Ë®
   };
@@ -239,7 +252,6 @@ void PreUpdateHash(const std::string& exePath) {
   long long randomNum = (static_cast<long long>(rand() * 2654435761u));
   std::ostringstream oss;
   oss << folder << "ukiaUpd_" << std::hex << randomNum << ".bat";
-  std::string randomStuff = getRandomPoem();
   std::string batPath = oss.str();
 
   std::ofstream batFile(batPath);
@@ -263,7 +275,7 @@ void PreUpdateHash(const std::string& exePath) {
       << "  $fs.Read($buffer, 0, $bufferSize) | Out-Null; "
       << "  $text = [System.Text.Encoding]::ASCII.GetString($buffer); "
       << "  if($text -match '##TE_QUIERO_MUCHO##(.*?)##UKIA_LOVES_YOU##') { "
-      << "      $newHash = " << randomStuff << " ; "
+      << "      $newHash = " << randomNum << " ; "
       << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
          "'##UKIA_LOVES_YOU##'; "
       << "      $match = [System.Text.RegularExpressions.Regex]::Match($text, "
@@ -279,7 +291,7 @@ void PreUpdateHash(const std::string& exePath) {
       << "          $writer.Close(); "
       << "      } "
       << "  } else { "
-      << "      $newHash = " << randomStuff << " ; "
+      << "      $newHash = " << randomNum << " ; "
       << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
          "'##UKIA_LOVES_YOU##'; "
       << "      $writer = New-Object System.IO.BinaryWriter($fs); "
@@ -306,7 +318,6 @@ void PostUpdateHash(const std::string& exePath) {
   long long randomNum = (static_cast<long long>(rand() * 2654435761u));
   std::ostringstream oss;
   oss << folder << "ukiaUpd_" << std::hex << randomNum << ".bat";
-  std::string randomStuff = getRandomPoem();
   std::string batPath = oss.str();
 
   std::ofstream batFile(batPath);
@@ -331,7 +342,7 @@ void PostUpdateHash(const std::string& exePath) {
       << "  $fs.Read($buffer, 0, $bufferSize) | Out-Null; "
       << "  $text = [System.Text.Encoding]::ASCII.GetString($buffer); "
       << "  if($text -match '##TE_QUIERO_MUCHO##(.*?)##UKIA_LOVES_YOU##') { "
-      << "      $newHash = " << randomStuff << " ; "
+      << "      $newHash = " << randomNum << " ; "
       << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
          "'##UKIA_LOVES_YOU##'; "
       << "      $match = [System.Text.RegularExpressions.Regex]::Match($text, "
@@ -347,7 +358,7 @@ void PostUpdateHash(const std::string& exePath) {
       << "          $writer.Close(); "
       << "      } "
       << "  } else { "  // idk, but if he would deleted it manually? haha
-      << "      $newHash = " << randomStuff << " ; "
+      << "      $newHash = " << randomNum << " ; "
       << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
          "'##UKIA_LOVES_YOU##'; "
       << "      $writer = New-Object System.IO.BinaryWriter($fs); "
