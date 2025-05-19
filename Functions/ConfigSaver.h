@@ -1,27 +1,134 @@
 #pragma once
 
-#include "../Utils/yaml-cpp/yaml.h"
+#include <string>
+
 #include "../ImGui/imgui.h"
+#include "../Utils/yaml-cpp/yaml.h"
 #include "config.h"
 
-#include <string>
+struct ConfigFileCache {
+  std::filesystem::file_time_type modifyTime;
+  std::string author;
+  std::string modiTimeStr;
+};
+
+static std::string selectedConfigFile;
+static std::string deletePendingFile;
+static std::vector<std::tuple<std::string, std::string, std::string>>
+    configFiles;
+static std::unordered_map<std::string, ConfigFileCache> configFileCache;
+static std::filesystem::file_time_type lastConfigScanTime;
 
 namespace MyConfigSaver {
 
-void SaveConfig(const std::string& filename, std::string& author) {
-  std::ofstream configFile(config::path + '/' + filename);
-  if (!configFile.is_open()) {
-    std::cerr << "[Info] Error: Could not open the configuration file."
-              << std::endl;
+void UpdateConfigFiles() {
+  static std::vector<std::string> currentFiles;
+  currentFiles.clear();
+
+  auto currentScanTime = std::filesystem::last_write_time(config::path);
+  if (currentScanTime <= lastConfigScanTime && !configFiles.empty() &&
+      deletePendingFile.empty() && selectedConfigFile.empty()) {
     return;
   }
-  if (author.empty()) author = getenv("USERNAME");
+  lastConfigScanTime = currentScanTime;
+
+  std::vector<std::tuple<std::string, std::string, std::string>> newFiles;
+  std::error_code ec;
+  auto dirIter = std::filesystem::directory_iterator(config::path, ec);
+  if (ec) return;
+
+  newFiles.reserve(configFiles.size() * 2);
+
+  for (const auto& entry : dirIter) {
+    if (!entry.is_regular_file() || entry.path().extension() != XorStr(".yaml"))
+      continue;
+
+    const auto filename = entry.path().filename().string();
+    currentFiles.push_back(filename);
+
+    const auto modifyTime = entry.last_write_time();
+    auto& cache = configFileCache[filename];
+
+    if (cache.modifyTime == modifyTime && !cache.modiTimeStr.empty()) {
+      newFiles.emplace_back(filename, cache.modiTimeStr, cache.author);
+      continue;
+    }
+
+    std::string author;
+    if (std::ifstream file{entry.path()}) {
+      std::string line;
+      for (int i = 0; i < 3 && std::getline(file, line); ++i) {
+        if (i == 2 && line.find(XorStr("# Author: ")) == 0) {
+          author = line.substr(10);
+          break;
+        }
+      }
+    }
+
+    const auto sysTime =
+        std::chrono::clock_cast<std::chrono::system_clock>(modifyTime);
+    const std::time_t cTime = std::chrono::system_clock::to_time_t(sysTime);
+    char timeBuf[26];
+    ctime_s(timeBuf, sizeof(timeBuf), &cTime);
+    std::string timeStr = timeBuf;
+    if (!timeStr.empty() && timeStr.back() == '\n') {
+      timeStr.pop_back();
+    }
+
+    cache = {modifyTime, author, timeStr};
+    newFiles.emplace_back(filename, std::move(timeStr), std::move(author));
+  }
+
+  for (auto it = configFileCache.begin(); it != configFileCache.end();) {
+    if (std::find(currentFiles.begin(), currentFiles.end(), it->first) ==
+        currentFiles.end()) {
+      it = configFileCache.erase(it);
+    } else {
+      ++it;
+    }
+  }
+
+  std::sort(newFiles.begin(), newFiles.end(), [](const auto& a, const auto& b) {
+    return std::get<0>(a) > std::get<0>(b);
+  });
+
+  configFiles.swap(newFiles);
+}
+
+static std::string GetAuthorFromFile(const std::string& filePath) {
+  std::ifstream file(filePath);
+  std::string line;
+  for (int i = 0; i < 3 && std::getline(file, line); ++i) {
+    if (i == 2 && line.find(XorStr("# Author: ")) == 0) {
+      return line.substr(10);
+    }
+  }
+  return "";
+}
+
+void SaveConfig(const std::string& filename, const std::string& author) {
+  const std::string fullPath = config::path + XorStr("/") + filename;
+  const bool isNewFile = !std::filesystem::exists(fullPath);
+
+  std::string actualAuthor = author;
+
+  if (isNewFile) {
+    if (actualAuthor.empty()) {
+      if (const char* username = std::getenv(XorStr("USERNAME"))) {
+        actualAuthor = username;
+      }
+    }
+  } else {
+    actualAuthor = GetAuthorFromFile(fullPath);
+  }
+
   YAML::Emitter emitter;
   emitter << YAML::Comment(
-      "UkiaRPM-CSS Configuration File\nVersion: 1.0\nAuthor: " + author);
+      XorStr("UkiaRPM-CSS Configuration File\nVersion: 1.0\nAuthor: ") +
+      actualAuthor);
   emitter << YAML::BeginMap;
 
-  emitter << YAML::Key << "config" << YAML::Value << YAML::BeginMap;
+  emitter << YAML::Key << XorStr("config") << YAML::Value << YAML::BeginMap;
 #define X(var, type) emitter << YAML::Key << #var << YAML::Value << config::var;
   AUTO_CONFIG_VARS
 #undef X
@@ -29,14 +136,22 @@ void SaveConfig(const std::string& filename, std::string& author) {
 
   emitter << YAML::EndMap;
 
+  std::ofstream configFile(fullPath);
+  if (!configFile.is_open()) {
+    MessageBoxA(nullptr, (XorStr("Could not open file:") + fullPath).c_str(),
+                XorStr("UkiaRPM"), MB_OK);
+    return;
+  }
   configFile << emitter.c_str();
   configFile.close();
-  printf(XorStr("Configuration saved to %s\n"),
-         (config::path + '/' + filename).c_str());
+
+  printf(XorStr("Configuration %s at %s (Author: %s)\n"),
+         isNewFile ? XorStr("created") : XorStr("updated"), fullPath.c_str(),
+         actualAuthor.c_str());
 }
 
 void LoadConfig(const std::string& filename) {
-  YAML::Node root = YAML::LoadFile(config::path + '/' + filename);
+  YAML::Node root = YAML::LoadFile(config::path + XorStr("/") + filename);
   if (root["config"]) {
     YAML::Node configNode = root["config"];
 #define X(var, type)                           \
