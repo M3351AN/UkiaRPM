@@ -216,13 +216,13 @@ inline void DrawMenu() {
 
     ImGui::SameLine();
 
-    ImGui::BeginChild(XorStr("Settings"), child_size);
+ImGui::BeginChild(XorStr("Settings"), child_size);
     {
       static int nSelectedColor = 0;
       static char configNameBuffer[128] = "NewConfig";
       static char configAuthorBuffer[128] = "";
       std::string configAuthorName;
-      static int selectedConfig = -1;
+      static std::string selectedConfigFile;
 
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                           ImVec2(ImGui::GetStyle().FramePadding.x, 0));
@@ -248,7 +248,6 @@ inline void DrawMenu() {
           tempFiles.begin(), tempFiles.end(),
           [](const auto& a, const auto& b) { return a.second > b.second; });
 
-      configFiles.clear();
       for (const auto& file : tempFiles) {
         configFiles.push_back(file.first);
       }
@@ -256,6 +255,16 @@ inline void DrawMenu() {
       configFilesCStr.clear();
       for (const auto& file : configFiles) {
         configFilesCStr.push_back(file.c_str());
+      }
+
+      int currentIndex = -1;
+      if (!selectedConfigFile.empty()) {
+        auto it = std::find(configFiles.begin(), configFiles.end(),
+                            selectedConfigFile);
+        if (it != configFiles.end()) {
+          currentIndex =
+              static_cast<int>(std::distance(configFiles.begin(), it));
+        }
       }
 
       const float CursorX = 10.f;
@@ -266,34 +275,38 @@ inline void DrawMenu() {
 
       ImGui::SetCursorPosX(CurrentCursorX + CursorX);
       ImGui::SetNextItemWidth(ComponentWidth);
-      ImGui::ListBox(XorStr("##ConfigFiles"), &selectedConfig,
-                     configFilesCStr.data(), configFilesCStr.size(), 5);
+      if (ImGui::ListBox(XorStr("##ConfigFiles"), &currentIndex,
+                         configFilesCStr.data(), configFilesCStr.size(), 5)) {
+        if (currentIndex >= 0 && currentIndex < configFiles.size()) {
+          selectedConfigFile = configFiles[currentIndex];
+        } else {
+          selectedConfigFile.clear();
+        }
+      }
 
       ImGui::SetCursorPosX(CurrentCursorX + CursorX);
-      if (ImGui::Button(XorStr("Load")) && selectedConfig >= 0 &&
-          selectedConfig < configFiles.size()) {
-        std::string selectedConfigFile = configFiles[selectedConfig];
+      if (ImGui::Button(XorStr("Load")) && !selectedConfigFile.empty()) {
         MyConfigSaver::LoadConfig(selectedConfigFile);
       }
       ImGui::SameLine();
-      if (ImGui::Button(XorStr("Save")) && selectedConfig >= 0 &&
-          selectedConfig < configFiles.size()) {
-        std::string selectedConfigFile = configFiles[selectedConfig];
+      if (ImGui::Button(XorStr("Save")) && !selectedConfigFile.empty()) {
         MyConfigSaver::SaveConfig(selectedConfigFile, configAuthorName);
       }
       ImGui::SameLine();
-      if (ImGui::Button(XorStr("Delete")) && selectedConfig >= 0 &&
-          selectedConfig < configFiles.size())
+      if (ImGui::Button(XorStr("Delete")) && !selectedConfigFile.empty()) {
         ImGui::OpenPopup(XorStr("##reallyDelete"));
+      }
+
       if (ImGui::BeginPopup(XorStr("##reallyDelete"))) {
         ImGui::TextUnformatted(XorStr("Are you sure?"));
-        if (ImGui::Button(XorStr("No"))) ImGui::CloseCurrentPopup();
+        if (ImGui::Button(XorStr("No"))) {
+          ImGui::CloseCurrentPopup();
+        }
         ImGui::SameLine();
         if (ImGui::Button(XorStr("Yes"))) {
-          std::string fullPath = configDir + "\\" + configFiles[selectedConfig];
+          std::string fullPath = configDir + "\\" + selectedConfigFile;
           if (std::remove(fullPath.c_str()) == 0) {
-            configFiles.erase(configFiles.begin() + selectedConfig);
-            selectedConfig = -1;
+            selectedConfigFile.clear();
           }
           ImGui::CloseCurrentPopup();
         }
@@ -335,6 +348,7 @@ inline void DrawMenu() {
           ImGui::OpenPopup(XorStr("##configConflict"));
         } else {
           MyConfigSaver::SaveConfig(configFileName, configAuthorName);
+          selectedConfigFile = configFileName;
         }
       }
 
@@ -386,7 +400,7 @@ inline void DrawMenu() {
   ImGui::EndTabBar();
   ImGui::SetCursorPos(ImVec2{style.ItemSpacing.x, 350});
   ImGui::Text(
-      XorStr("UkiaRPM for Counter-Strike Source %s"),
+      XorStr("UkiaRPM for Counter-Strike Source by œsë… %s"),
       UkiaData::strHWID.substr(UkiaData::strHWID.length() - 16).c_str());
 
   ImGui::End();
@@ -449,7 +463,7 @@ inline void DrawMenu() {
     ImGui::SetCursorPos(ImVec2{15, 250} + factor * 0.3351f);
     ImGui::TextColored(ImColor(245, 245, 245, 245), "NOT FOR SELLING!!");
     ImGui::SetCursorPos(ImVec2{15, 295} + factor * 0.1337f);
-    ImGui::TextColored(ImColor(245, 245, 245, 245), "UkiaRPM");
+    ImGui::TextColored(ImColor(245, 245, 245, 245), "UkiaRPM for Counter-Strike Source");
     ImGui::SetCursorPos(ImVec2{15, 335} + factor * 0.2024f);
     ImGui::TextColored(ImColor(245, 245, 245, 245), "Build: %s %s", __DATE__,
                        __TIME__);
