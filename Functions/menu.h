@@ -59,25 +59,29 @@ void DrawMenu() {
         XorStr("Aim assist##legit"),
         ImVec2(child_size.x,
                (child_size.y - (style.ItemInnerSpacing.y)) * .6f));
-    {}
+    {
+    }
     ImGui::EndChild();
 
     ImGui::BeginChild(
         XorStr("Silent"),
         ImVec2(child_size.x,
                (child_size.y - (style.ItemInnerSpacing.y)) * .4f));
-    {}
+    {
+    }
     ImGui::EndChild();
 
     ImGui::SameLine();
     ImGui::SetCursorPosY(childBegin);
     ImGui::BeginChild(XorStr("Triggerbot"), child_size);
-    {}
+    {
+    }
     ImGui::EndChild();
     ImGui::SameLine();
     ImGui::SetCursorPosY(childBegin);
     ImGui::BeginChild(XorStr("Others##aimbot"), child_size);
-    {}
+    {
+    }
     ImGui::EndChild();
 
     ImGui::EndTabItem();
@@ -223,12 +227,28 @@ void DrawMenu() {
       std::vector<const char*> configFilesCStr;
 
       configFiles.clear();
+
+      std::vector<std::pair<std::string, std::filesystem::file_time_type>>
+          tempFiles;
       for (const auto& entry : std::filesystem::directory_iterator(configDir)) {
         if (entry.is_regular_file() &&
             entry.path().extension() == XorStr(".yaml")) {
-          configFiles.push_back(entry.path().filename().string());
+          tempFiles.emplace_back(
+              entry.path().filename().string(),
+              std::filesystem::last_write_time(entry.path()));
         }
       }
+
+      std::sort(
+          tempFiles.begin(), tempFiles.end(),
+          [](const auto& a, const auto& b) { return a.second > b.second; });
+
+      configFiles.clear();
+      for (const auto& file : tempFiles) {
+        configFiles.push_back(file.first);
+      }
+
+      configFilesCStr.clear();
       for (const auto& file : configFiles) {
         configFilesCStr.push_back(file.c_str());
       }
@@ -300,7 +320,36 @@ void DrawMenu() {
             std::string(configNameBuffer) + XorStr(".yaml");
         configAuthorName = std::string(configAuthorBuffer);
 
-        MyConfigSaver::SaveConfig(configFileName, configAuthorName);
+        bool nameConflict = false;
+        for (const auto& existingFile : configFiles) {
+          if (existingFile == configFileName) {
+            nameConflict = true;
+            break;
+          }
+        }
+
+        if (nameConflict) {
+          ImGui::OpenPopup(XorStr("##configConflict"));
+        } else {
+          MyConfigSaver::SaveConfig(configFileName, configAuthorName);
+        }
+      }
+
+      if (ImGui::BeginPopup(XorStr("##configConflict"))) {
+        ImGui::TextUnformatted(XorStr("Do you want to overwrite it?"));
+
+        if (ImGui::Button(XorStr("No"))) {
+          ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button(XorStr("Yes"))) {
+          std::string configFileName =
+              std::string(configNameBuffer) + XorStr(".yaml");
+          MyConfigSaver::SaveConfig(configFileName, configAuthorName);
+          ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
       }
       ImGui::SameLine();
       if (ImGui::Button(XorStr("Open folder"))) {
@@ -318,7 +367,8 @@ void DrawMenu() {
     {
       ImGui::Checkbox(XorStr("team check"), &config::TeamCheck);
       ImGui::Checkbox(XorStr("bypass capture"), &config::BypassCapture);
-      ImGui::Combo(XorStr("style"), &config::Style,XorStr("Classic\0Dark\0Light\0"));
+      ImGui::Combo(XorStr("style"), &config::Style,
+                   XorStr("Classic\0Dark\0Light\0"));
       if (ImGui::Button(XorStr("Unhook"))) {
         global::isRunning = false;
       }
@@ -375,7 +425,8 @@ void DrawMenu() {
                    ImGuiWindowFlags_::ImGuiWindowFlags_NoNav);
   {
     ImGui::SetCursorPos(ImVec2{50, 25});
-    ImGui::Image((ImTextureID)global::Shigure, ImVec2{258, 349}, ImVec2{0, 0},ImVec2{1, 1});
+    ImGui::Image((ImTextureID)global::Shigure, ImVec2{258, 349}, ImVec2{0, 0},
+                 ImVec2{1, 1});
 
     const ImVec2 vecWindPos = ImGui::GetWindowPos();
     const ImVec2 vecWindSize = ImGui::GetWindowSize();
