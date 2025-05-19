@@ -2,6 +2,19 @@
 
 namespace Menu {
 void DrawMenu() {
+  switch (config::Style) {
+    case 0:
+      ImGui::StyleColorsClassic();
+      break;
+    case 1:
+      ImGui::StyleColorsDark();
+      break;
+    case 2:
+      ImGui::StyleColorsLight();
+      break;
+    default:
+      ImGui::StyleColorsClassic();
+  }
   float textoffset;
   int randomresult = (rand() % 15) + 1;
   if (randomresult % 2 == 0)
@@ -305,6 +318,7 @@ void DrawMenu() {
     {
       ImGui::Checkbox(XorStr("team check"), &config::TeamCheck);
       ImGui::Checkbox(XorStr("bypass capture"), &config::BypassCapture);
+      ImGui::Combo(XorStr("style"), &config::Style,XorStr("Classic\0Dark\0Light\0"));
       if (ImGui::Button(XorStr("Unhook"))) {
         global::isRunning = false;
       }

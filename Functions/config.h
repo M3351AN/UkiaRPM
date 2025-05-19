@@ -10,7 +10,8 @@
   X(PitchIndicator, bool)  \
   X(InfoString, bool)      \
   X(TeamCheck, bool)       \
-  X(BypassCapture, bool)
+  X(BypassCapture, bool)   \
+  X(Style, int)
 
 namespace config {
 inline std::string path = "";
@@ -25,4 +26,5 @@ bool PitchIndicator = true;
 bool InfoString = true;
 bool TeamCheck = true;
 bool BypassCapture = false;
+int Style = 0;
 }  // namespace config
