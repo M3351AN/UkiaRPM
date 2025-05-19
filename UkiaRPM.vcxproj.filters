@@ -31,6 +31,9 @@
     <Filter Include="头文件\Utils\yaml-cpp">
       <UniqueIdentifier>{23cb46c3-1829-4a0f-bfd1-3298f506fbf5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Functions\Aimbot">
+      <UniqueIdentifier>{0076d590-d7a5-4fb4-8e72-df8308bfd5f4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="源.cc">
@@ -184,6 +187,12 @@
     </ClInclude>
     <ClInclude Include="Utils\yaml-cpp\yaml.h">
       <Filter>头文件\Utils\yaml-cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="HarmonySans.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\Aimbot\RCS.h">
+      <Filter>头文件\Functions\Aimbot</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

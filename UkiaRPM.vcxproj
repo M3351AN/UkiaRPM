@@ -247,6 +247,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CSSx64.h" />
+    <ClInclude Include="Functions\Aimbot\RCS.h" />
     <ClInclude Include="Functions\config.h" />
     <ClInclude Include="Functions\ConfigSaver.h" />
     <ClInclude Include="Functions\Func.h" />

@@ -1,7 +1,7 @@
 #include "ConfigSaver.h"
 
 namespace Menu {
-void DrawMenu() {
+inline void DrawMenu() {
   switch (config::Style) {
     case 0:
       ImGui::StyleColorsClassic();
@@ -64,10 +64,15 @@ void DrawMenu() {
     ImGui::EndChild();
 
     ImGui::BeginChild(
-        XorStr("Silent"),
+        XorStr("RCS"),
         ImVec2(child_size.x,
                (child_size.y - (style.ItemInnerSpacing.y)) * .4f));
     {
+      ImGui::Checkbox(XorStr("RCS"), &config::RCS);
+      ImGui::SliderFloat(XorStr("RCS scale x"), &config::RCSScale.x, -2.5f, 2.5f,
+                         XorStr("%.1f"));
+      ImGui::SliderFloat(XorStr("RCS scale y"), &config::RCSScale.y, -2.5f, 2.5f,
+                         XorStr("%.1f"));
     }
     ImGui::EndChild();
 
@@ -276,8 +281,7 @@ void DrawMenu() {
         std::string selectedConfigFile = configFiles[selectedConfig];
         MyConfigSaver::SaveConfig(selectedConfigFile, configAuthorName);
       }
-
-      ImGui::SetCursorPosX(CurrentCursorX + CursorX);
+      ImGui::SameLine();
       if (ImGui::Button(XorStr("Delete")) && selectedConfig >= 0 &&
           selectedConfig < configFiles.size())
         ImGui::OpenPopup(XorStr("##reallyDelete"));
@@ -313,7 +317,6 @@ void DrawMenu() {
       ImGui::InputText(XorStr("###AuthorNameInput"), configAuthorBuffer,
                        sizeof(configAuthorBuffer));
 
-      ImGui::NewLine();
       ImGui::SetCursorPosX(CurrentCursorX + CursorX);
       if (ImGui::Button(XorStr("Create"))) {
         std::string configFileName =

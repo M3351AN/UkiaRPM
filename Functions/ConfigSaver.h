@@ -1,9 +1,10 @@
 #pragma once
-#include <string>
 
-#include "../ImGui/imgui.h"
 #include "../Utils/yaml-cpp/yaml.h"
+#include "../ImGui/imgui.h"
 #include "config.h"
+
+#include <string>
 
 namespace MyConfigSaver {
 

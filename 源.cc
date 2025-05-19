@@ -454,6 +454,7 @@ class ScopedThreadManager {
     try {
       m_threads.emplace_back([&] { CheckAliveThread(); });
       m_threads.emplace_back([&] { EntityUpdateThread(); });
+      m_threads.emplace_back([&] { ViewProcessThread(); });
       m_threads.emplace_back([&] { MemoryProcessThread(); });
       m_threads.emplace_back([&] { Sonar::SoundThread(); });
       return true;
@@ -488,10 +489,15 @@ class ScopedThreadManager {
   void EntityUpdateThread() {
     while (global::isRunning) {
       entity_list.UpdateAll();
-      std::this_thread::sleep_for(std::chrono::milliseconds(15));
+      std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
   }
-
+  void ViewProcessThread() {
+    while (global::isRunning) {
+      ViewFunctions(entity_list);
+      std::this_thread::sleep_for(std::chrono::milliseconds(1));
+    }
+  }
   void MemoryProcessThread() {
     while (global::isRunning) {
       MemoryFunctions(entity_list);

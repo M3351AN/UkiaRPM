@@ -1,6 +1,9 @@
 #pragma once
 
 #define AUTO_CONFIG_VARS   \
+  X(RCS, bool)             \
+  X(RCSScale.x, float)     \
+  X(RCSScale.y, float)     \
   X(ESP, bool)             \
   X(ESPDormantTime, float) \
   X(ESPInfo, bool)         \
@@ -16,6 +19,8 @@
 namespace config {
 inline std::string path = "";
 inline bool ShowMenu = false;
+bool RCS = false;
+Vector2 RCSScale = {-2.f, 1.5f};
 bool ESP = true;
 float ESPDormantTime = 1.f;
 bool ESPInfo = false;

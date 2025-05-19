@@ -44,7 +44,7 @@ void SoundThread() {
 
 namespace Misc {
 
-void FoundEnemy(EntityList& entityList) {
+inline void FoundEnemy(EntityList& entityList) {
   if (!config::InfoString) return;
   std::lock_guard<std::mutex> lock(entityList.buffer_mtx);
 
@@ -122,7 +122,7 @@ void FoundEnemy(EntityList& entityList) {
   return;
 }
 
-void SonarRun(EntityList& entityList) {
+inline void SonarRun(EntityList& entityList) {
   if (!config::Sonar) return;
   std::lock_guard<std::mutex> lock(entityList.buffer_mtx);
 
@@ -191,7 +191,7 @@ void SonarRun(EntityList& entityList) {
   return;
 }
 
-void PitchIndicator(EntityList& entityList) {
+inline void PitchIndicator(EntityList& entityList) {
   if (!config::PitchIndicator) return;
   if (entityList.local_player_address == 0) return;
 

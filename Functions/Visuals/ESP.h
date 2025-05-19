@@ -6,7 +6,7 @@ namespace ESP {
 
 static std::unordered_map<uintptr_t, float> g_dormantStartTimes;
 
-void ESPRun(EntityList& entityList) {
+inline void ESPRun(EntityList& entityList) {
   if (!config::ESP) return;
 
   const Vector3& local_pos = entityList.local_player_data.position;

@@ -152,6 +152,8 @@ struct LocalData : public BaseEntityData {
   int fov;
   char _pad12[0x1584 - 0x1578];
   int crosshair_entity_id;
+  char _pad13[0x1A34 - 0x1588];
+  int m_iShotsFired;  // 0x1A34
 };
 #pragma pack(pop)
 
