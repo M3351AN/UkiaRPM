@@ -13,6 +13,7 @@
 
 #include "Functions/Func.h"
 #include "Utils/uiaccess.h"
+#include "HarmonySans.h"
 #pragma comment(lib, "winmm.lib")
 
 enum ZBID {
@@ -345,7 +346,18 @@ bool DirectXInit() {
   ImGui::GetIO().WantCaptureMouse || ImGui::GetIO().WantTextInput ||
       ImGui::GetIO().WantCaptureKeyboard;
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-  io.Fonts->AddFontDefault();
+
+  ImFontConfig font_cfg;
+  font_cfg.FontDataOwnedByAtlas = false;
+  ImFont* font = io.Fonts->AddFontFromMemoryTTF(
+      (void*)harmonySans,
+      sizeof(harmonySans),
+      16.0f,
+      &font_cfg,
+      io.Fonts->GetGlyphRangesChineseFull()
+  );
+  io.FontDefault = font;
+
   ImGui_ImplWin32_EnableDpiAwareness();
   ImGui_ImplWin32_Init(OverlayWindow::Hwnd);
   ImGui_ImplDX9_Init(DirectX9Interface::pDevice);

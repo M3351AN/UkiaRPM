@@ -253,6 +253,7 @@
     <ClInclude Include="Functions\menu.h" />
     <ClInclude Include="Functions\Miscs\Miscs.h" />
     <ClInclude Include="Functions\Visuals\ESP.h" />
+    <ClInclude Include="HarmonySans.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
     <ClInclude Include="ImGui\imgui_impl_dx9.h" />

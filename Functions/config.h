@@ -26,5 +26,5 @@ bool PitchIndicator = true;
 bool InfoString = true;
 bool TeamCheck = true;
 bool BypassCapture = false;
-int Style = 0;
+int Style = 2;
 }  // namespace config
