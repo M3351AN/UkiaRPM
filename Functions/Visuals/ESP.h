@@ -21,16 +21,16 @@ inline void ESPRun(EntityList& entityList) {
     if (!ent.IsEnemy(local_team)) continue;
 
     if (ent.data.dormant) {
-      if (g_dormantStartTimes.find(ent.address) == g_dormantStartTimes.end()) {
-        g_dormantStartTimes[ent.address] = currentTime;
+      if (g_dormantStartTimes.find(ent.index) == g_dormantStartTimes.end()) {
+        g_dormantStartTimes[ent.index] = currentTime;
       }
 
-      if (currentTime - g_dormantStartTimes[ent.address] >
+      if (currentTime - g_dormantStartTimes[ent.index] >
           config::ESPDormantTime) {
         continue;
       }
     } else {
-      g_dormantStartTimes.erase(ent.address);
+      g_dormantStartTimes.erase(ent.index);
     }
 
     float dist = ent.DistanceTo(local_pos);

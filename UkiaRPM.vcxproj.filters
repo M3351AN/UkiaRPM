@@ -63,6 +63,9 @@
     <ClCompile Include="Utils\uiaccess.c">
       <Filter>头文件\Utils</Filter>
     </ClCompile>
+    <ClCompile Include="Overlay.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="UkiaStuff.h">
@@ -193,6 +196,12 @@
     </ClInclude>
     <ClInclude Include="Functions\Aimbot\RCS.h">
       <Filter>头文件\Functions\Aimbot</Filter>
+    </ClInclude>
+    <ClInclude Include="Functions\Visuals\Radar.h">
+      <Filter>头文件\Functions\Visuals</Filter>
+    </ClInclude>
+    <ClInclude Include="maths.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

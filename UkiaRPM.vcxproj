@@ -242,6 +242,7 @@
     <ClCompile Include="ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="Overlay.cc" />
     <ClCompile Include="Utils\uiaccess.c" />
     <ClCompile Include="源.cc" />
   </ItemGroup>
@@ -254,6 +255,7 @@
     <ClInclude Include="Functions\menu.h" />
     <ClInclude Include="Functions\Miscs\Miscs.h" />
     <ClInclude Include="Functions\Visuals\ESP.h" />
+    <ClInclude Include="Functions\Visuals\Radar.h" />
     <ClInclude Include="HarmonySans.h" />
     <ClInclude Include="ImGui\imconfig.h" />
     <ClInclude Include="ImGui\imgui.h" />
@@ -263,6 +265,7 @@
     <ClInclude Include="ImGui\imstb_rectpack.h" />
     <ClInclude Include="ImGui\imstb_textedit.h" />
     <ClInclude Include="ImGui\imstb_truetype.h" />
+    <ClInclude Include="maths.h" />
     <ClInclude Include="Overlay.h" />
     <ClInclude Include="resource1.h" />
     <ClInclude Include="shigure.h" />

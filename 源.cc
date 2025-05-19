@@ -13,6 +13,7 @@
 
 #include "Functions/Func.h"
 #include "HarmonySans.h"
+#include "shigure.h"
 #include "Utils/uiaccess.h"
 #pragma comment(lib, "winmm.lib")
 
