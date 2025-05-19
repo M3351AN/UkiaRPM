@@ -7,8 +7,9 @@ since this repo was private for some days. commit history maybe messd up
 - Use Native APIs to OpenProcess/WPM/RPM/CreateWindow
 - Multithread
 - Basic imgui render
-- overlay at most top with uiaccess
+- overlay at most top with uiaccess(which allows you overlay while game in full-screen mode, but some bugs need to resolve)
 - automatic change exe file hash eachtime run/exit
+- Basic config system with yaml-cpp
 ## To use it
 - modify those offsets and struct to game u wanna hack(current struct is completely irregular, only for testing)
 - modify functions that u wanna make
