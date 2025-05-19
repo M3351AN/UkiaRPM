@@ -178,11 +178,12 @@ std::string getRandomPoem() {
       "\xE9\x9B\xAA",  // 雪
       "\xE6\x9C\x88",  // 月
       "\xE7\x83\x9F",  // 烟
+      "\xE6\x97\xB6",  // 时
       "\xE9\x9B\xA8",  // 雨
-      "\xE6\xB1\x9F",  // 江
-      "\xE6\xB9\x96",  // 湖
       "\xE6\xB8\x9F",  // 渟
       "\xE4\xBA\x91",  // 云
+      "\xE6\xB1\x9F",  // 江
+      "\xE6\xB9\x96",  // 湖
       "\xE6\x98\x9F",  // 星
       "\xE6\x9C\x88",  // 月
       "\xE6\x99\xAF",  // 景
