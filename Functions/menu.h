@@ -361,7 +361,7 @@ void DrawMenu() {
                    ImGuiWindowFlags_::ImGuiWindowFlags_NoNav);
   {
     ImGui::SetCursorPos(ImVec2{50, 25});
-    ImGui::Image((void*)global::Shigure, ImVec2{258, 349});
+    ImGui::Image((ImTextureID)global::Shigure, ImVec2{258, 349}, ImVec2{0, 0},ImVec2{1, 1});
 
     const ImVec2 vecWindPos = ImGui::GetWindowPos();
     const ImVec2 vecWindSize = ImGui::GetWindowSize();

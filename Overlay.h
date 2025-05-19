@@ -80,27 +80,27 @@ void DrawStrokeText(int x, int y, RGBA* color, const char* str) {
   ImFont a;
   std::string utf_8_1 = std::string(str);
   std::string utf_8_2 = string_To_UTF8(utf_8_1);
-  ImGui::GetOverlayDrawList()->AddText(
+  ImGui::GetBackgroundDrawList()->AddText(
       ImVec2(x, y - 1),
       ImGui::ColorConvertFloat4ToU32(
           ImVec4(1 / 255.0, 1 / 255.0, 1 / 255.0, 255 / 255.0)),
       utf_8_2.c_str());
-  ImGui::GetOverlayDrawList()->AddText(
+  ImGui::GetBackgroundDrawList()->AddText(
       ImVec2(x, y + 1),
       ImGui::ColorConvertFloat4ToU32(
           ImVec4(1 / 255.0, 1 / 255.0, 1 / 255.0, 255 / 255.0)),
       utf_8_2.c_str());
-  ImGui::GetOverlayDrawList()->AddText(
+  ImGui::GetBackgroundDrawList()->AddText(
       ImVec2(x - 1, y),
       ImGui::ColorConvertFloat4ToU32(
           ImVec4(1 / 255.0, 1 / 255.0, 1 / 255.0, 255 / 255.0)),
       utf_8_2.c_str());
-  ImGui::GetOverlayDrawList()->AddText(
+  ImGui::GetBackgroundDrawList()->AddText(
       ImVec2(x + 1, y),
       ImGui::ColorConvertFloat4ToU32(
           ImVec4(1 / 255.0, 1 / 255.0, 1 / 255.0, 255 / 255.0)),
       utf_8_2.c_str());
-  ImGui::GetOverlayDrawList()->AddText(ImVec2(x, y),
+  ImGui::GetBackgroundDrawList()->AddText(ImVec2(x, y),
                                        ImGui::ColorConvertFloat4ToU32(ImVec4(
                                            color->R / 255.0, color->G / 255.0,
                                            color->B / 255.0, color->A / 255.0)),
@@ -111,7 +111,7 @@ void DrawNewText(int x, int y, RGBA* color, const char* str) {
   ImFont a;
   std::string utf_8_1 = std::string(str);
   std::string utf_8_2 = string_To_UTF8(utf_8_1);
-  ImGui::GetOverlayDrawList()->AddText(ImVec2(x, y),
+  ImGui::GetBackgroundDrawList()->AddText(ImVec2(x, y),
                                        ImGui::ColorConvertFloat4ToU32(ImVec4(
                                            color->R / 255.0, color->G / 255.0,
                                            color->B / 255.0, color->A / 255.0)),
@@ -119,7 +119,7 @@ void DrawNewText(int x, int y, RGBA* color, const char* str) {
 }
 
 void DrawRect(int x, int y, int w, int h, RGBA* color, int thickness) {
-  ImGui::GetOverlayDrawList()->AddRect(ImVec2(x, y), ImVec2(x + w, y + h),
+  ImGui::GetBackgroundDrawList()->AddRect(ImVec2(x, y), ImVec2(x + w, y + h),
                                        ImGui::ColorConvertFloat4ToU32(ImVec4(
                                            color->R / 255.0, color->G / 255.0,
                                            color->B / 255.0, color->A / 255.0)),
@@ -138,7 +138,7 @@ void DrawEspBox2D(Vector2 feet, Vector2 head, RGBA* color, int thickness) {
   ImVec2 boxMin(head.x - (height / 2) / 2, head.y);
   ImVec2 boxMax(pd + (height / 2) / 2, feet.y);
 
-  auto drawlist = ImGui::GetOverlayDrawList();
+  auto drawlist = ImGui::GetBackgroundDrawList();
   drawlist->AddRect(boxMin, boxMax, ImColor(boxColor), 0.0f, 0, thickness);
   drawlist->AddRect(ImVec2(boxMin.x - thickness, boxMin.y - thickness),
                     ImVec2(boxMax.x + thickness, boxMax.y + thickness),
@@ -159,14 +159,14 @@ void DrawNameTag(Vector2 feet, Vector2 head, char* name) {
   const ImVec2 textPos = ImFloor(
       {(boxMin.x + boxMax.x - textSize.x) / 2.f, boxMin.y - textSize.y - 2.f});
 
-  auto draw_list = ImGui::GetOverlayDrawList();
+  auto draw_list = ImGui::GetBackgroundDrawList();
   draw_list->AddText(ImVec2(textPos.x + 1.f, textPos.y + 1.f),
                      IM_COL32(0, 0, 0, 255), name);
   draw_list->AddText(textPos, IM_COL32(255, 255, 255, 255), name);
 }
 
 void DrawFilledRect(int x, int y, int w, int h, RGBA* color) {
-  ImGui::GetOverlayDrawList()->AddRectFilled(
+  ImGui::GetBackgroundDrawList()->AddRectFilled(
       ImVec2(x, y), ImVec2(x + w, y + h),
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
                                             color->B / 255.0,
@@ -175,7 +175,7 @@ void DrawFilledRect(int x, int y, int w, int h, RGBA* color) {
 }
 
 void DrawCircleFilled(int x, int y, int radius, RGBA* color) {
-  ImGui::GetOverlayDrawList()->AddCircleFilled(
+  ImGui::GetBackgroundDrawList()->AddCircleFilled(
       ImVec2(x, y), radius,
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
                                             color->B / 255.0,
@@ -183,7 +183,7 @@ void DrawCircleFilled(int x, int y, int radius, RGBA* color) {
 }
 
 void DrawCircle(int x, int y, int radius, RGBA* color, int segments) {
-  ImGui::GetOverlayDrawList()->AddCircle(
+  ImGui::GetBackgroundDrawList()->AddCircle(
       ImVec2(x, y), radius,
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
                                             color->B / 255.0,
@@ -193,7 +193,7 @@ void DrawCircle(int x, int y, int radius, RGBA* color, int segments) {
 
 void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA* color,
                   float thickne) {
-  ImGui::GetOverlayDrawList()->AddTriangle(
+  ImGui::GetBackgroundDrawList()->AddTriangle(
       ImVec2(x1, y1), ImVec2(x2, y2), ImVec2(x3, y3),
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
                                             color->B / 255.0,
@@ -203,7 +203,7 @@ void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA* color,
 
 void DrawTriangleFilled(int x1, int y1, int x2, int y2, int x3, int y3,
                         RGBA* color) {
-  ImGui::GetOverlayDrawList()->AddTriangleFilled(
+  ImGui::GetBackgroundDrawList()->AddTriangleFilled(
       ImVec2(x1, y1), ImVec2(x2, y2), ImVec2(x3, y3),
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
                                             color->B / 255.0,
@@ -211,7 +211,7 @@ void DrawTriangleFilled(int x1, int y1, int x2, int y2, int x3, int y3,
 }
 
 void DrawLine(int x1, int y1, int x2, int y2, RGBA* color, int thickness) {
-  ImGui::GetOverlayDrawList()->AddLine(ImVec2(x1, y1), ImVec2(x2, y2),
+  ImGui::GetBackgroundDrawList()->AddLine(ImVec2(x1, y1), ImVec2(x2, y2),
                                        ImGui::ColorConvertFloat4ToU32(ImVec4(
                                            color->R / 255.0, color->G / 255.0,
                                            color->B / 255.0, color->A / 255.0)),

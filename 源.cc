@@ -218,7 +218,6 @@ void UpdateInputState() {
   io.KeyCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
   io.KeyShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
   io.KeyAlt = (GetAsyncKeyState(VK_MENU) & 0x8000) != 0;
-  io.KeysDown[vkDelete] = currentState;
 }
 
 void HandlePresentResult(HRESULT result) {
