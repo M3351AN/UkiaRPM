@@ -6,6 +6,8 @@
 #include <iphlpapi.h>
 #include <psapi.h>
 
+#include <algorithm>
+#include <chrono>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
@@ -13,6 +15,7 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -32,7 +35,7 @@ constexpr uint32_t CompileTimeSeed() {
   const char* time_str = __TIME__ __DATE__;
   uint32_t hash = 0;
   for (int i = 0; time_str[i] != '\0'; ++i) {
-    hash = hash * 65599 + time_str[i];  // 简单哈希算法
+    hash = hash * 65599 + time_str[i];
   }
   return hash;
 }
@@ -157,6 +160,58 @@ void AntiDebugger(std::string log = "") noexcept {
   }
 }
 
+std::wstring utf8ToUtf16(const std::string& utf8Str) {
+  int size_needed =
+      MultiByteToWideChar(CP_UTF8, 0, utf8Str.c_str(), -1, nullptr, 0);
+  if (size_needed == 0) {
+    return std::wstring();
+  }
+  std::wstring wstr(size_needed, 0);
+  MultiByteToWideChar(CP_UTF8, 0, utf8Str.c_str(), -1, &wstr[0], size_needed);
+  return wstr;
+}
+
+std::string getRandomPoem() {
+  static const std::vector<std::string> words = {
+      "\xE9\xA3\x8E",  // 风
+      "\xE8\x8A\xB1",  // 花
+      "\xE9\x9B\xAA",  // 雪
+      "\xE6\x9C\x88",  // 月
+      "\xE7\x83\x9F",  // 烟
+      "\xE9\x9B\xA8",  // 雨
+      "\xE6\xB1\x9F",  // 江
+      "\xE6\xB9\x96",  // 湖
+      "\xE6\xB8\x9F",  // 渟
+      "\xE4\xBA\x91",  // 云
+      "\xE5\xB1\xB1",  // 山
+      "\xE6\xB0\xB4"   // 水
+  };
+
+  static std::mt19937 rng(static_cast<unsigned>(
+      std::chrono::system_clock::now().time_since_epoch().count()));
+
+  std::vector<std::string> shuffled = words;
+  std::shuffle(shuffled.begin(), shuffled.end(), rng);
+
+  std::string poem;
+  for (size_t i = 0; i < 10; ++i) {
+    poem += shuffled[i];
+    if ((i + 1) % 5 == 0 && i != 10 - 1) {
+      poem += "\xEF\xBC\x8C";
+    }
+  }
+  poem += "\xE3\x80\x82";
+  return poem;
+}
+
+LPCWSTR getRandomPoemW() {
+  std::string utf8Poem = getRandomPoem();
+  std::wstring wstr = utf8ToUtf16(utf8Poem);
+  static std::wstring staticWstr;
+  staticWstr = wstr;
+  return staticWstr.c_str();
+}
+
 std::string GetSelfPath() {
   char pathBuffer[MAX_PATH] = {0};
 
@@ -166,7 +221,7 @@ std::string GetSelfPath() {
   }
   return std::string(pathBuffer);
 }
-// 检查是否有 --hash-ready 参数
+
 bool HasHashReadyParameter(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i) {
     if (strcmp(argv[i], "--hash-ready") == 0) return true;
@@ -181,10 +236,10 @@ void PreUpdateHash(const std::string& exePath) {
   std::string exeName =
       (pos != std::string::npos) ? exePath.substr(pos + 1) : exePath;
   srand(static_cast<unsigned int>(time(nullptr)));
-  long long randomName = (static_cast<long long>(rand()) << 15) +
-                         (static_cast<long long>(rand() * 2654435761u));
+  long long randomNum = (static_cast<long long>(rand() * 2654435761u));
   std::ostringstream oss;
-  oss << folder << "ukiaUpd_" << std::hex << randomName << ".bat";
+  oss << folder << "ukiaUpd_" << std::hex << randomNum << ".bat";
+  std::string randomStuff = getRandomPoem();
   std::string batPath = oss.str();
 
   std::ofstream batFile(batPath);
@@ -208,7 +263,7 @@ void PreUpdateHash(const std::string& exePath) {
       << "  $fs.Read($buffer, 0, $bufferSize) | Out-Null; "
       << "  $text = [System.Text.Encoding]::ASCII.GetString($buffer); "
       << "  if($text -match '##TE_QUIERO_MUCHO##(.*?)##UKIA_LOVES_YOU##') { "
-      << "      $newHash = " << randomName << " ; "
+      << "      $newHash = " << randomStuff << " ; "
       << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
          "'##UKIA_LOVES_YOU##'; "
       << "      $match = [System.Text.RegularExpressions.Regex]::Match($text, "
@@ -224,7 +279,7 @@ void PreUpdateHash(const std::string& exePath) {
       << "          $writer.Close(); "
       << "      } "
       << "  } else { "
-      << "      $newHash = " << randomName << " ; "
+      << "      $newHash = " << randomStuff << " ; "
       << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
          "'##UKIA_LOVES_YOU##'; "
       << "      $writer = New-Object System.IO.BinaryWriter($fs); "
@@ -248,10 +303,10 @@ void PostUpdateHash(const std::string& exePath) {
   std::string exeName =
       (pos != std::string::npos) ? exePath.substr(pos + 1) : exePath;
   srand(static_cast<unsigned int>(time(nullptr)));
-  long long randomName = (static_cast<long long>(rand()) << 15) -
-                         (static_cast<long long>(rand() << 1) * 2654435761u);
+  long long randomNum = (static_cast<long long>(rand() * 2654435761u));
   std::ostringstream oss;
-  oss << folder << "ukiaUpd_" << std::hex << randomName << ".bat";
+  oss << folder << "ukiaUpd_" << std::hex << randomNum << ".bat";
+  std::string randomStuff = getRandomPoem();
   std::string batPath = oss.str();
 
   std::ofstream batFile(batPath);
@@ -276,7 +331,7 @@ void PostUpdateHash(const std::string& exePath) {
       << "  $fs.Read($buffer, 0, $bufferSize) | Out-Null; "
       << "  $text = [System.Text.Encoding]::ASCII.GetString($buffer); "
       << "  if($text -match '##TE_QUIERO_MUCHO##(.*?)##UKIA_LOVES_YOU##') { "
-      << "      $newHash = " << randomName << " ; "
+      << "      $newHash = " << randomStuff << " ; "
       << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
          "'##UKIA_LOVES_YOU##'; "
       << "      $match = [System.Text.RegularExpressions.Regex]::Match($text, "
@@ -292,7 +347,7 @@ void PostUpdateHash(const std::string& exePath) {
       << "          $writer.Close(); "
       << "      } "
       << "  } else { "  // idk, but if he would deleted it manually? haha
-      << "      $newHash = " << randomName << " ; "
+      << "      $newHash = " << randomStuff << " ; "
       << "      $newBlock = '##TE_QUIERO_MUCHO##' + $newHash + "
          "'##UKIA_LOVES_YOU##'; "
       << "      $writer = New-Object System.IO.BinaryWriter($fs); "
@@ -309,16 +364,7 @@ void PostUpdateHash(const std::string& exePath) {
                 folder.empty() ? NULL : folder.c_str(), SW_HIDE);
 }
 void RandomTitle() noexcept {
-  constexpr int length = 25;
-  const auto characters = TEXT(
-      "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`-=~!@#$%^"
-      "&*()_+,./;'[]|{}:?");
-  TCHAR title[length + 1]{};
-
-  for (int j = 0; j != length; j++) {
-    title[j] += characters[rand() % 95];
-  }
-
+  LPCWSTR title = getRandomPoemW();
   SetConsoleTitle(title);
 }
 

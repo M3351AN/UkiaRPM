@@ -12,8 +12,8 @@
 #include <unordered_map>
 
 #include "Functions/Func.h"
-#include "Utils/uiaccess.h"
 #include "HarmonySans.h"
+#include "Utils/uiaccess.h"
 #pragma comment(lib, "winmm.lib")
 
 enum ZBID {
@@ -350,12 +350,8 @@ bool DirectXInit() {
   ImFontConfig font_cfg;
   font_cfg.FontDataOwnedByAtlas = false;
   ImFont* font = io.Fonts->AddFontFromMemoryTTF(
-      (void*)harmonySans,
-      sizeof(harmonySans),
-      16.0f,
-      &font_cfg,
-      io.Fonts->GetGlyphRangesChineseFull()
-  );
+      (void*)harmonySans, sizeof(harmonySans), 16.0f, &font_cfg,
+      io.Fonts->GetGlyphRangesChineseFull());
   io.FontDefault = font;
 
   ImGui_ImplWin32_EnableDpiAwareness();
@@ -401,12 +397,21 @@ void SetupWindow() {
         WS_POPUP | WS_VISIBLE, global::screenPos.x, global::screenPos.y,
         global::screenSize.x, global::screenSize.y, NULL, NULL, 0, NULL);
   else {
-    WNDCLASSEXW wc = {
-        sizeof(wc), CS_CLASSDC, WinProc, 0L,   0L,       GetModuleHandle(NULL),
-        NULL,       NULL,       NULL,    NULL, L"Ukia?", NULL};
+    WNDCLASSEXW wc = {sizeof(wc),
+                      CS_CLASSDC,
+                      WinProc,
+                      0L,
+                      0L,
+                      GetModuleHandle(NULL),
+                      NULL,
+                      NULL,
+                      NULL,
+                      NULL,
+                      Ukia::getRandomPoemW(),
+                      NULL};
     auto res = RegisterClassExW(&wc);
     OverlayWindow::Hwnd = pCreateWindowInBand(
-        WS_EX_TOPMOST, res, L"Ukia!", WS_POPUP | WS_VISIBLE,
+        WS_EX_TOPMOST, res, Ukia::getRandomPoemW(), WS_POPUP | WS_VISIBLE,
         global::screenPos.x, global::screenPos.y, global::screenSize.x,
         global::screenSize.y, NULL, NULL, wc.hInstance, NULL, ZBID_UIACCESS);
   }
@@ -531,7 +536,7 @@ bool WaitForGameFocus() {
 }
 
 bool InitializeRendering() {
-  OverlayWindow::Name = XorStr("Ukia.");
+  OverlayWindow::Name = Ukia::getRandomPoem().c_str();
   SetupWindow();
 
   if (!DirectXInit()) {
