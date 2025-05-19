@@ -6042,133 +6042,97 @@ bool ImGui::BeginChild(ImGuiID id, const ImVec2& size_arg, ImGuiChildFlags child
     return BeginChildEx(NULL, id, size_arg, child_flags, window_flags);
 }
 
-bool ImGui::BeginChildEx(const char* name, ImGuiID id, const ImVec2& size_arg, ImGuiChildFlags child_flags, ImGuiWindowFlags window_flags)
-{
-    ImGuiContext& g = *GImGui;
-    ImGuiWindow* parent_window = g.CurrentWindow;
-    IM_ASSERT(id != 0);
+bool ImGui::BeginChildEx(const char* name, ImGuiID id, const ImVec2& size_arg,
+                         ImGuiChildFlags child_flags,
+                         ImGuiWindowFlags window_flags) {
+  ImGuiContext& g = *GImGui;
+  ImGuiWindow* parent_window = g.CurrentWindow;
 
-    // Sanity check as it is likely that some user will accidentally pass ImGuiWindowFlags into the ImGuiChildFlags argument.
-    const ImGuiChildFlags ImGuiChildFlags_SupportedMask_ = ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding | ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY | ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_AlwaysAutoResize | ImGuiChildFlags_FrameStyle | ImGuiChildFlags_NavFlattened;
-    IM_UNUSED(ImGuiChildFlags_SupportedMask_);
-    IM_ASSERT((child_flags & ~ImGuiChildFlags_SupportedMask_) == 0 && "Illegal ImGuiChildFlags value. Did you pass ImGuiWindowFlags values instead of ImGuiChildFlags?");
-    IM_ASSERT((window_flags & ImGuiWindowFlags_AlwaysAutoResize) == 0 && "Cannot specify ImGuiWindowFlags_AlwaysAutoResize for BeginChild(). Use ImGuiChildFlags_AlwaysAutoResize!");
-    if (child_flags & ImGuiChildFlags_AlwaysAutoResize)
-    {
-        IM_ASSERT((child_flags & (ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY)) == 0 && "Cannot use ImGuiChildFlags_ResizeX or ImGuiChildFlags_ResizeY with ImGuiChildFlags_AlwaysAutoResize!");
-        IM_ASSERT((child_flags & (ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY)) != 0 && "Must use ImGuiChildFlags_AutoResizeX or ImGuiChildFlags_AutoResizeY with ImGuiChildFlags_AlwaysAutoResize!");
-    }
-#ifndef IMGUI_DISABLE_OBSOLETE_FUNCTIONS
-    if (window_flags & ImGuiWindowFlags_AlwaysUseWindowPadding)
-        child_flags |= ImGuiChildFlags_AlwaysUseWindowPadding;
-    if (window_flags & ImGuiWindowFlags_NavFlattened)
-        child_flags |= ImGuiChildFlags_NavFlattened;
-#endif
-    if (child_flags & ImGuiChildFlags_AutoResizeX)
-        child_flags &= ~ImGuiChildFlags_ResizeX;
-    if (child_flags & ImGuiChildFlags_AutoResizeY)
-        child_flags &= ~ImGuiChildFlags_ResizeY;
+  window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
+           ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_ChildWindow |
+           ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoScrollbar;
+  window_flags |= (parent_window->Flags &
+            ImGuiWindowFlags_NoMove);  // Inherit the NoMove flag
 
-    // Set window flags
-    window_flags |= ImGuiWindowFlags_ChildWindow | ImGuiWindowFlags_NoTitleBar;
-    window_flags |= (parent_window->Flags & ImGuiWindowFlags_NoMove); // Inherit the NoMove flag
-    if (child_flags & (ImGuiChildFlags_AutoResizeX | ImGuiChildFlags_AutoResizeY | ImGuiChildFlags_AlwaysAutoResize))
-        window_flags |= ImGuiWindowFlags_AlwaysAutoResize;
-    if ((child_flags & (ImGuiChildFlags_ResizeX | ImGuiChildFlags_ResizeY)) == 0)
-        window_flags |= ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings;
+  // Size
+  const ImVec2 content_avail = GetContentRegionAvail();
+  ImVec2 size = ImFloor(size_arg);
+  const int auto_fit_axises = ((size.x == 0.0f) ? (1 << ImGuiAxis_X) : 0x00) |
+                              ((size.y == 0.0f) ? (1 << ImGuiAxis_Y) : 0x00);
+  if (size.x <= 0.0f)
+    size.x = ImMax(
+        content_avail.x + size.x,
+        4.0f);  // Arbitrary minimum child size (0.0f causing too many issues)
+  if (size.y <= 0.0f) size.y = ImMax(content_avail.y + size.y, 4.0f);
+  SetNextWindowSize(size);
 
-    // Special framed style
-    if (child_flags & ImGuiChildFlags_FrameStyle)
-    {
-        PushStyleColor(ImGuiCol_ChildBg, g.Style.Colors[ImGuiCol_FrameBg]);
-        PushStyleVar(ImGuiStyleVar_ChildRounding, g.Style.FrameRounding);
-        PushStyleVar(ImGuiStyleVar_ChildBorderSize, g.Style.FrameBorderSize);
-        PushStyleVar(ImGuiStyleVar_WindowPadding, g.Style.FramePadding);
-        child_flags |= ImGuiChildFlags_Borders | ImGuiChildFlags_AlwaysUseWindowPadding;
-        window_flags |= ImGuiWindowFlags_NoMove;
-    }
+  // Build up name. If you need to append to a same child from multiple location
+  // in the ID stack, use BeginChild(ImGuiID id) with a stable value.
+  const char* temp_window_name;
+  if (name)
+    ImFormatStringToTempBuffer(&temp_window_name, NULL, "%s/%s_%08X",
+                               parent_window->Name, name, id);
+  else
+    ImFormatStringToTempBuffer(&temp_window_name, NULL, "%s/%08X",
+                               parent_window->Name, id);
 
-    // Forward size
-    // Important: Begin() has special processing to switch condition to ImGuiCond_FirstUseEver for a given axis when ImGuiChildFlags_ResizeXXX is set.
-    // (the alternative would to store conditional flags per axis, which is possible but more code)
-    const ImVec2 size_avail = GetContentRegionAvail();
-    const ImVec2 size_default((child_flags & ImGuiChildFlags_AutoResizeX) ? 0.0f : size_avail.x, (child_flags & ImGuiChildFlags_AutoResizeY) ? 0.0f : size_avail.y);
-    ImVec2 size = CalcItemSize(size_arg, size_default.x, size_default.y);
+  const float backup_border_size = g.Style.ChildBorderSize;
+  if (!(child_flags & ImGuiChildFlags_Borders)) g.Style.ChildBorderSize = 0.0f;
+  bool ret = Begin(temp_window_name, NULL, window_flags);
+  g.Style.ChildBorderSize = backup_border_size;
 
-    // A SetNextWindowSize() call always has priority (#8020)
-    // (since the code in Begin() never supported SizeVal==0.0f aka auto-resize via SetNextWindowSize() call, we don't support it here for now)
-    // FIXME: We only support ImGuiCond_Always in this path. Supporting other paths would requires to obtain window pointer.
-    if ((g.NextWindowData.HasFlags & ImGuiNextWindowDataFlags_HasSize) != 0 && (g.NextWindowData.SizeCond & ImGuiCond_Always) != 0)
-    {
-        if (g.NextWindowData.SizeVal.x > 0.0f)
-        {
-            size.x = g.NextWindowData.SizeVal.x;
-            child_flags &= ~ImGuiChildFlags_ResizeX;
-        }
-        if (g.NextWindowData.SizeVal.y > 0.0f)
-        {
-            size.y = g.NextWindowData.SizeVal.y;
-            child_flags &= ~ImGuiChildFlags_ResizeY;
-        }
-    }
-    SetNextWindowSize(size);
+  ImGuiWindow* child_window = g.CurrentWindow;
+  child_window->ChildId = id;
 
-    // Forward child flags (we allow prior settings to merge but it'll only work for adding flags)
-    if (g.NextWindowData.HasFlags & ImGuiNextWindowDataFlags_HasChildFlags)
-        g.NextWindowData.ChildFlags |= child_flags;
-    else
-        g.NextWindowData.ChildFlags = child_flags;
-    g.NextWindowData.HasFlags |= ImGuiNextWindowDataFlags_HasChildFlags;
+  // Set the cursor to handle case where the user called
+  // SetNextWindowPos()+BeginChild() manually. While this is not really
+  // documented/defined, it seems that the expected thing to do.
+  if (child_window->BeginCount == 1)
+    parent_window->DC.CursorPos = child_window->Pos;
 
-    // Build up name. If you need to append to a same child from multiple location in the ID stack, use BeginChild(ImGuiID id) with a stable value.
-    // FIXME: 2023/11/14: commented out shorted version. We had an issue with multiple ### in child window path names, which the trailing hash helped workaround.
-    // e.g. "ParentName###ParentIdentifier/ChildName###ChildIdentifier" would get hashed incorrectly by ImHashStr(), trailing _%08X somehow fixes it.
-    const char* temp_window_name;
-    /*if (name && parent_window->IDStack.back() == parent_window->ID)
-        ImFormatStringToTempBuffer(&temp_window_name, NULL, "%s/%s", parent_window->Name, name); // May omit ID if in root of ID stack
-    else*/
-    if (name)
-        ImFormatStringToTempBuffer(&temp_window_name, NULL, "%s/%s_%08X", parent_window->Name, name, id);
-    else
-        ImFormatStringToTempBuffer(&temp_window_name, NULL, "%s/%08X", parent_window->Name, id);
+  // Process navigation-in immediately so NavInit can run on first frame
+  // Can enter a child if (A) it has navigatable items or (B) it can be
+  // scrolled.
+  const ImGuiID temp_id_for_activation = (id + 1);
+  if (g.ActiveId == temp_id_for_activation) ClearActiveID();
+  if (g.NavActivateId == id && !(window_flags & ImGuiWindowFlags_NavFlattened) &&
+      (child_window->DC.NavLayersActiveMask != 0 ||
+       child_window->DC.NavWindowHasScrollY)) {
+    FocusWindow(child_window);
+    NavInitWindow(child_window, false);
+    SetActiveID(temp_id_for_activation,
+                child_window);  // Steal ActiveId with another arbitrary id so
+                                // that key-press won't activate child item
+    g.ActiveIdSource = g.NavInputSource;
+  }
 
-    // Set style
-    const float backup_border_size = g.Style.ChildBorderSize;
-    if ((child_flags & ImGuiChildFlags_Borders) == 0)
-        g.Style.ChildBorderSize = 0.0f;
+  float space_sz = 5.f;
+  ImVec2 label_size = CalcTextSize(name);
 
-    // Begin into window
-    const bool ret = Begin(temp_window_name, NULL, window_flags);
+  if (name) {
+    PushStyleVar(ImGuiStyleVar_Alpha, 1.f);
+    RenderFrame(parent_window->DC.CursorPos + ImVec2(0.f, space_sz),
+                parent_window->DC.CursorPos + size,
+                GetColorU32(ImGuiCol_ChildBg), false, 0.f);
+    PopStyleVar();
 
-    // Restore style
-    g.Style.ChildBorderSize = backup_border_size;
-    if (child_flags & ImGuiChildFlags_FrameStyle)
-    {
-        PopStyleVar(3);
-        PopStyleColor();
-    }
+    RenderText(parent_window->DC.CursorPos +
+                   ImVec2(20.f, space_sz - (label_size.y / 2)),
+               name);
+    // SetCursorPosY(GetCursorPosY() + space_sz + (label_size.y / 2) +
+    // g.Style.ItemSpacing.y + g.Style.FramePadding.y * 2);
+    Dummy(ImVec2{g.Style.ItemSpacing.x + g.Style.FramePadding.x * 2,
+                 GetCursorPosY() + space_sz + (label_size.y / 2) +
+                     g.Style.ItemSpacing.y + g.Style.FramePadding.y * 2});
+    Indent(10.f);
+  } else {
+    PushStyleVar(ImGuiStyleVar_Alpha, 1.f);
+    RenderFrame(parent_window->DC.CursorPos, parent_window->DC.CursorPos + size,
+                GetColorU32(ImGuiCol_ChildBg), false, 0.f);
+    PopStyleVar();
+  }
 
-    ImGuiWindow* child_window = g.CurrentWindow;
-    child_window->ChildId = id;
-
-    // Set the cursor to handle case where the user called SetNextWindowPos()+BeginChild() manually.
-    // While this is not really documented/defined, it seems that the expected thing to do.
-    if (child_window->BeginCount == 1)
-        parent_window->DC.CursorPos = child_window->Pos;
-
-    // Process navigation-in immediately so NavInit can run on first frame
-    // Can enter a child if (A) it has navigable items or (B) it can be scrolled.
-    const ImGuiID temp_id_for_activation = ImHashStr("##Child", 0, id);
-    if (g.ActiveId == temp_id_for_activation)
-        ClearActiveID();
-    if (g.NavActivateId == id && !(child_flags & ImGuiChildFlags_NavFlattened) && (child_window->DC.NavLayersActiveMask != 0 || child_window->DC.NavWindowHasScrollY))
-    {
-        FocusWindow(child_window);
-        NavInitWindow(child_window, false);
-        SetActiveID(temp_id_for_activation, child_window); // Steal ActiveId with another arbitrary id so that key-press won't activate child item
-        g.ActiveIdSource = g.NavInputSource;
-    }
-    return ret;
+  return ret;
 }
 
 void ImGui::EndChild()
