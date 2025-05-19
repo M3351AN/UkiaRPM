@@ -10,6 +10,7 @@ since this repo was private for some days. commit history maybe messd up
 - overlay at most top with uiaccess(which allows you overlay while game in full-screen mode, but some bugs need to resolve)
 - automatic change exe file hash eachtime run/exit
 - Basic config system with yaml-cpp
+- Random title with 风花雪月
 ## To use it
 - modify those offsets and struct to game u wanna hack(current struct is completely irregular, only for testing)
 - modify functions that u wanna make
