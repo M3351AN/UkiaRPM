@@ -244,6 +244,7 @@
     <ClCompile Include="ImGui\imgui_tables.cpp" />
     <ClCompile Include="ImGui\imgui_widgets.cpp" />
     <ClCompile Include="Overlay.cc" />
+    <ClCompile Include="UkiaStuff.cc" />
     <ClCompile Include="Utils\uiaccess.c" />
     <ClCompile Include="源.cc" />
   </ItemGroup>

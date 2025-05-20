@@ -1,6 +1,11 @@
 #pragma once
 
+#include <filesystem>
+#include <fstream>
+#include <string>
+
 #include "../ImGui/imgui.h"
+#include "../Utils/Xorstr.h"
 #include "../Utils/yaml-cpp/yaml.h"
 #include "config.h"
 
@@ -126,7 +131,7 @@ inline static ImColor UInt32ToImColor(uint32_t value) {
 }
 
 inline static std::vector<int> LoadVector(const YAML::Node& node,
-                                   std::vector<int> defaultValue) {
+                                          std::vector<int> defaultValue) {
   if (node.IsDefined() && node.IsSequence()) {
     std::vector<int> result;
     for (const YAML::Node& element : node) {
