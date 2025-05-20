@@ -23,7 +23,7 @@
 #define WIN32_LEAN_AND_MEAN
 #pragma comment(lib, "iphlpapi.lib")
 
-constexpr uint32_t CompileTimeSeed() {
+constexpr uint32_t CompileTimeSeed() noexcept {
   const char* time_str = __TIME__ __DATE__;
   uint32_t hash = 0;
   for (int i = 0; time_str[i] != '\0'; ++i) {
@@ -33,14 +33,14 @@ constexpr uint32_t CompileTimeSeed() {
 }
 
 namespace Ukia {
-void HideConsole() {
+void HideConsole() noexcept {
   HWND hwndConsole = GetConsoleWindow();
   if (hwndConsole) {
     ShowWindow(hwndConsole, SW_HIDE);  // 隐藏控制台
   }
 }
 
-void ShowConsole() {
+void ShowConsole() noexcept {
   HWND hwndConsole = GetConsoleWindow();
   if (hwndConsole) {
     ShowWindow(hwndConsole, SW_SHOW);  // 显示控制台
@@ -59,7 +59,7 @@ void AntiDebugger(std::string log) noexcept {
   }
 }
 
-std::wstring utf8ToUtf16(const std::string& utf8Str) {
+std::wstring utf8ToUtf16(const std::string& utf8Str) noexcept {
   int size_needed =
       MultiByteToWideChar(CP_UTF8, 0, utf8Str.c_str(), -1, nullptr, 0);
   if (size_needed == 0) {
@@ -70,7 +70,7 @@ std::wstring utf8ToUtf16(const std::string& utf8Str) {
   return wstr;
 }
 
-std::string getRandomPoem() {
+std::string getRandomPoem() noexcept {
   static const std::vector<std::string> words = {
       "\xE9\xA3\x8E",  // 风
       "\xE8\x8A\xB1",  // 花
@@ -117,7 +117,7 @@ std::string getRandomPoem() {
   return poem;
 }
 
-LPCWSTR getRandomPoemW() {
+LPCWSTR getRandomPoemW() noexcept {
   std::string utf8Poem = getRandomPoem();
   std::wstring wstr = utf8ToUtf16(utf8Poem);
   static std::wstring staticWstr;
@@ -125,7 +125,7 @@ LPCWSTR getRandomPoemW() {
   return staticWstr.c_str();
 }
 
-std::string GetSelfPath() {
+std::string GetSelfPath() noexcept {
   char pathBuffer[MAX_PATH] = {0};
 
   if (GetModuleFileNameA(NULL, pathBuffer, sizeof(pathBuffer)) == 0) {
@@ -135,14 +135,14 @@ std::string GetSelfPath() {
   return std::string(pathBuffer);
 }
 
-bool HasHashReadyParameter(int argc, char* argv[]) {
+bool HasHashReadyParameter(int argc, char* argv[]) noexcept {
   for (int i = 1; i < argc; ++i) {
     if (strcmp(argv[i], "--hash-ready") == 0) return true;
   }
   return false;
 }
 
-void PreUpdateHash(const std::string& exePath) {
+void PreUpdateHash(const std::string& exePath) noexcept {
   size_t pos = exePath.find_last_of("\\/");
   std::string folder =
       (pos != std::string::npos) ? exePath.substr(0, pos + 1) : "";
@@ -208,7 +208,7 @@ void PreUpdateHash(const std::string& exePath) {
   ShellExecuteA(NULL, "open", batPath.c_str(), NULL,
                 folder.empty() ? NULL : folder.c_str(), SW_HIDE);
 }
-void PostUpdateHash(const std::string& exePath) {
+void PostUpdateHash(const std::string& exePath) noexcept {
   size_t pos = exePath.find_last_of("\\/");
   std::string folder =
       (pos != std::string::npos) ? exePath.substr(0, pos + 1) : "";
@@ -279,7 +279,7 @@ void RandomTitle() noexcept {
   SetConsoleTitle(title);
 }
 
-bool IsFullscreen(HWND hwnd) {
+bool IsFullscreen(HWND hwnd) noexcept {
   RECT windowRect, screenRect;
   GetWindowRect(hwnd, &windowRect);
   GetWindowRect(GetDesktopWindow(), &screenRect);
@@ -331,7 +331,7 @@ std::string GenerateDiskSerial() noexcept {
   return ss.str();
 }
 
-static std::string GenerateHwId() {
+static std::string GenerateHwId() noexcept {
   std::string strMac = GenerateMacAddress();
   std::string strDiskSerial = GenerateDiskSerial();
   return strMac + strDiskSerial;
@@ -341,7 +341,7 @@ static std::string GenerateHwId() {
 // structure as NtOpenProcess will fail otherwise
 OBJECT_ATTRIBUTES InitObjectAttributes(PUNICODE_STRING name, ULONG attributes,
                                        HANDLE hRoot,
-                                       PSECURITY_DESCRIPTOR security) {
+                                       PSECURITY_DESCRIPTOR security) noexcept {
   OBJECT_ATTRIBUTES object;
 
   object.Length = sizeof(OBJECT_ATTRIBUTES);
@@ -356,7 +356,7 @@ OBJECT_ATTRIBUTES InitObjectAttributes(PUNICODE_STRING name, ULONG attributes,
 bool IsHandleValid(
     HANDLE handle)  // i made this to simply check if a handle is valid rather
                     // than repeating the if statments
-{
+    noexcept {
   if (handle && handle != INVALID_HANDLE_VALUE)
     return true;
   else
@@ -364,7 +364,7 @@ bool IsHandleValid(
 }
 
 HANDLE UkiaOpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
-                       DWORD dwProcessId) {
+                       DWORD dwProcessId) noexcept {
   // At last is same with "OpenProcess", but we call "NtOpenProcess" (Native
   // API) directly.
   HANDLE hProcess = 0;
@@ -378,7 +378,7 @@ HANDLE UkiaOpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
 
 BOOL UkiaReadProcessMemory(HANDLE hProcess, LPCVOID lpBaseAddress,
                            LPVOID lpBuffer, SIZE_T nSize,
-                           SIZE_T* lpNumberOfBytesRead) {
+                           SIZE_T* lpNumberOfBytesRead) noexcept {
   static pNtReadVirtualMemory NtReadVirtualMemory = []() {
     return reinterpret_cast<pNtReadVirtualMemory>(GetProcAddress(
         GetModuleHandleA(XorStr("ntdll.dll")), XorStr("NtReadVirtualMemory")));
@@ -425,7 +425,7 @@ BOOL UkiaReadProcessMemory(HANDLE hProcess, LPCVOID lpBaseAddress,
 
 BOOL UkiaWriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress,
                             LPCVOID lpBuffer, SIZE_T nSize,
-                            SIZE_T* lpNumberOfBytesWritten) {
+                            SIZE_T* lpNumberOfBytesWritten) noexcept {
   static pNtWriteVirtualMemory NtWriteVirtualMemory = []() {
     return reinterpret_cast<pNtWriteVirtualMemory>(GetProcAddress(
         GetModuleHandleA(XorStr("ntdll.dll")), XorStr("NtWriteVirtualMemory")));
@@ -474,7 +474,7 @@ BOOL UkiaWriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress,
   return FALSE;
 }
 
-BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType) {
+BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType) noexcept {
   switch (dwCtrlType) {
     case CTRL_CLOSE_EVENT:
     case CTRL_LOGOFF_EVENT:
@@ -499,7 +499,7 @@ BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType) {
   }
   return FALSE;
 }
-StatusCode ProcessManager::Attach(std::string ProcessName) {
+StatusCode ProcessManager::Attach(std::string ProcessName) noexcept {
   ProcessID = this->GetProcessID(ProcessName);
   _is_invalid(ProcessID, FAILE_PROCESSID);
   ModuleAddress =
@@ -527,14 +527,14 @@ StatusCode ProcessManager::Attach(std::string ProcessName) {
   return SUCCEED;
 }
 
-void ProcessManager::Detach() {
+void ProcessManager::Detach() noexcept {
   if (hProcess) CloseHandle(hProcess);
   hProcess = 0;
   ProcessID = 0;
   ModuleAddress = 0;
   attached_ = false;
 }
-HWND ProcessManager::GetWindowHandleFromProcessId(DWORD ProcessId) {
+HWND ProcessManager::GetWindowHandleFromProcessId(DWORD ProcessId) noexcept {
   HWND hwnd = NULL;
   do {
     hwnd = FindWindowEx(NULL, hwnd, NULL, NULL);
@@ -551,7 +551,7 @@ HWND ProcessManager::GetWindowHandleFromProcessId(DWORD ProcessId) {
   return NULL;  // No main window found for the given process ID
 }
 
-bool ProcessManager::IsActive() {
+bool ProcessManager::IsActive() noexcept {
   if (!attached_) return false;
   DWORD ExitCode{};
   GetExitCodeProcess(hProcess, &ExitCode);
@@ -559,7 +559,8 @@ bool ProcessManager::IsActive() {
 }
 
 // tewshi0 idea
-std::string ProcessManager::ReadString(DWORD64 address, size_t maxLength) {
+std::string ProcessManager::ReadString(DWORD64 address,
+                                       size_t maxLength) noexcept {
   std::vector<char> buffer(maxLength, 0);
 
   if (!ReadMemory<char>(address, buffer[0], maxLength)) {
@@ -576,7 +577,7 @@ std::string ProcessManager::ReadString(DWORD64 address, size_t maxLength) {
   return std::string(buffer.data(), actualLength);
 }
 
-DWORD ProcessManager::GetProcessID(std::string ProcessName) {
+DWORD ProcessManager::GetProcessID(std::string ProcessName) noexcept {
   PROCESSENTRY32 ProcessInfoPE;
   ProcessInfoPE.dwSize = sizeof(PROCESSENTRY32);
   HANDLE hSnapshot = CreateToolhelp32Snapshot(15, 0);
@@ -592,7 +593,7 @@ DWORD ProcessManager::GetProcessID(std::string ProcessName) {
   return 0;
 }
 DWORD64 ProcessManager::TraceAddress(DWORD64 BaseAddress,
-                                     std::vector<DWORD> Offsets) {
+                                     std::vector<DWORD> Offsets) noexcept {
   _is_invalid(hProcess, 0);
   _is_invalid(ProcessID, 0);
   DWORD64 Address = 0;
@@ -607,7 +608,8 @@ DWORD64 ProcessManager::TraceAddress(DWORD64 BaseAddress,
   return Address == 0 ? 0 : Address + Offsets[Offsets.size() - 1];
 }
 
-HMODULE ProcessManager::GetProcessModuleHandle(std::string ModuleName) {
+HMODULE ProcessManager::GetProcessModuleHandle(
+    std::string ModuleName) noexcept {
   MODULEENTRY32 ModuleInfoPE;
   ModuleInfoPE.dwSize = sizeof(MODULEENTRY32);
   HANDLE hSnapshot =
@@ -624,7 +626,7 @@ HMODULE ProcessManager::GetProcessModuleHandle(std::string ModuleName) {
   return 0;
 }
 
-int UkiaInit(int argc, char* argv[]) {
+int UkiaInit(int argc, char* argv[]) noexcept {
   std::locale::global(std::locale("en_US.UTF-8"));
 #ifdef NDEBUG
   Ukia::HideConsole();
@@ -658,7 +660,7 @@ int UkiaInit(int argc, char* argv[]) {
   return 0;
 }
 
-int UkiaExit(DWORD code) {
+int UkiaExit(DWORD code) noexcept {
   ProcessMgr.Detach();
   std::string selfPath = Ukia::GetSelfPath();
   if (selfPath.empty()) {

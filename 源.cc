@@ -196,7 +196,7 @@ void SyncOverlayPosition(WindowStateTracker& stateTracker) {
   }
 }
 
-void UpdateInputState() {
+void UpdateInputState() noexcept {
   ImGuiIO& io = ImGui::GetIO();
 
   POINT cursorPos{0};
@@ -231,7 +231,7 @@ void HandlePresentResult(HRESULT result) {
   }
 }
 
-void RenderFrame() {
+void RenderFrame() noexcept {
   std::lock_guard<std::mutex> lock(g_d3dMutex);
   ImGui_ImplDX9_NewFrame();
   ImGui_ImplWin32_NewFrame();
@@ -270,7 +270,7 @@ void CleanupRenderResources() {
   }
 }
 
-void MainLoop() {
+void MainLoop() noexcept {
   static WindowStateTracker stateTracker;
   MSG& msg = DirectX9Interface::Message;
   ZeroMemory(&msg, sizeof(MSG));
@@ -312,7 +312,7 @@ void MainLoop() {
   CleanupRenderResources();
 }
 
-bool DirectXInit() {
+bool DirectXInit() noexcept {
   if (FAILED(
           Direct3DCreate9Ex(D3D_SDK_VERSION, &DirectX9Interface::Direct3D9))) {
     return false;
@@ -363,7 +363,7 @@ bool DirectXInit() {
   return true;
 }
 
-void SetupWindow() {
+void SetupWindow() noexcept {
   OverlayWindow::WindowClass = {sizeof(WNDCLASSEX),
                                 0,
                                 WinProc,
@@ -423,7 +423,7 @@ void SetupWindow() {
   UpdateWindow(OverlayWindow::Hwnd);
 }
 
-void LogInfo() {
+void LogInfo() noexcept {
   printf(XorStr("UkiaRPM for Counter-Strike Source\n"));
   printf(
       XorStr("\u4eca\u65e5\u306f\u3084\u308b\u6c17\u306f\u306a\u3044\u3063"
@@ -435,7 +435,7 @@ void LogInfo() {
          reinterpret_cast<void*>(Memory::engineAddress));
 }
 
-bool InitializeGameProcess() {
+bool InitializeGameProcess() noexcept {
   Ukia::ProcessMgr.Attach(XorStr("cstrike_win64.exe"));
   const DWORD processId = Ukia::ProcessMgr.ProcessID;
   if (!processId) return false;
@@ -455,7 +455,7 @@ bool InitializeGameProcess() {
 
 class ScopedThreadManager {
  public:
-  bool CreateThreads() {
+  bool CreateThreads() noexcept {
     try {
       m_threads.emplace_back([&] { CheckAliveThread(); });
       m_threads.emplace_back([&] { EntityUpdateThread(); });
@@ -470,7 +470,7 @@ class ScopedThreadManager {
     }
   }
 
-  ~ScopedThreadManager() {
+  ~ScopedThreadManager() noexcept {
     global::isRunning = false;
     for (auto& thread : m_threads) {
       if (thread.joinable()) thread.join();
@@ -480,7 +480,7 @@ class ScopedThreadManager {
  private:
   std::vector<std::thread> m_threads;
 
-  void CheckAliveThread() {
+  void CheckAliveThread() noexcept {
     while (global::isRunning) {
       constexpr wchar_t EXPECTED_TITLE[] =
           L"Counter-Strike Source - Direct3D 9 - 64 Bit";
@@ -491,25 +491,25 @@ class ScopedThreadManager {
     }
   }
 
-  void EntityUpdateThread() {
+  void EntityUpdateThread() noexcept {
     while (global::isRunning) {
       entity_list.UpdateAll();
       std::this_thread::sleep_for(std::chrono::milliseconds(5));
     }
   }
-  void ViewProcessThread() {
+  void ViewProcessThread() noexcept {
     while (global::isRunning) {
       ViewFunctions(entity_list);
       std::this_thread::sleep_for(std::chrono::milliseconds(1));
     }
   }
-  void MemoryProcessThread() {
+  void MemoryProcessThread() noexcept {
     while (global::isRunning) {
       MemoryFunctions(entity_list);
       std::this_thread::sleep_for(std::chrono::milliseconds(15));
     }
   }
-  void NonMemoryProcessThread() {
+  void NonMemoryProcessThread() noexcept {
     while (global::isRunning) {
       NonMemoryFunctions();
       std::this_thread::sleep_for(std::chrono::milliseconds(15));
@@ -541,7 +541,7 @@ bool WaitForGameFocus() {
   return false;
 }
 
-bool InitializeRendering() {
+bool InitializeRendering() noexcept {
   OverlayWindow::Name = Ukia::getRandomPoem().c_str();
   SetupWindow();
 
@@ -554,7 +554,7 @@ bool InitializeRendering() {
   return true;
 }
 
-void RunMainLoop() {
+void RunMainLoop() noexcept {
   try {
     while (global::isRunning) {
       MainLoop();
@@ -564,7 +564,7 @@ void RunMainLoop() {
   }
 }
 
-void CleanupResources() {
+void CleanupResources() noexcept {
   if (OverlayWindow::Hwnd) {
     DestroyWindow(OverlayWindow::Hwnd);
     UnregisterClassA(OverlayWindow::WindowClass.lpszClassName,
@@ -573,7 +573,7 @@ void CleanupResources() {
   }
 }
 
-int Mian() {
+int Mian() noexcept {
   global::uiAccessStatus = PrepareForUIAccess();
 
   if (!InitializeGameProcess()) {
@@ -629,7 +629,7 @@ int Mian() {
   return 0;
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) noexcept {
   Ukia::UkiaInit(argc, argv);
   return Mian();
 }

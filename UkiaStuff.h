@@ -90,31 +90,31 @@ inline SYSTEM_HANDLE_INFORMATION* hInfo;  // holds the handle information
 namespace UkiaData {
 inline std::string strHWID = "";
 }
-constexpr uint32_t CompileTimeSeed();
+constexpr uint32_t CompileTimeSeed() noexcept;
 namespace Ukia {
-void HideConsole();
-void ShowConsole();
+void HideConsole() noexcept;
+void ShowConsole() noexcept;
 void AntiDebugger(std::string log = "") noexcept;
-std::wstring utf8ToUtf16(const std::string& utf8Str);
-std::string getRandomPoem();
-LPCWSTR getRandomPoemW();
-std::string GetSelfPath();
-bool HasHashReadyParameter(int argc, char* argv[]);
-void PreUpdateHash(const std::string& exePath);
-void PostUpdateHash(const std::string& exePath);
+std::wstring utf8ToUtf16(const std::string& utf8Str) noexcept;
+std::string getRandomPoem() noexcept;
+LPCWSTR getRandomPoemW() noexcept;
+std::string GetSelfPath() noexcept;
+bool HasHashReadyParameter(int argc, char* argv[]) noexcept;
+void PreUpdateHash(const std::string& exePath) noexcept;
+void PostUpdateHash(const std::string& exePath) noexcept;
 void RandomTitle() noexcept;
-bool IsFullscreen(HWND hwnd);
+bool IsFullscreen(HWND hwnd) noexcept;
 std::string GenerateMacAddress() noexcept;
 std::string GenerateDiskSerial() noexcept;
-std::string GenerateHwId();
+std::string GenerateHwId() noexcept;
 HANDLE UkiaOpenProcess(DWORD dwDesiredAccess, BOOL bInheritHandle,
-                       DWORD dwProcessId);
+                       DWORD dwProcessId) noexcept;
 BOOL UkiaReadProcessMemory(HANDLE hProcess, LPCVOID lpBaseAddress,
                            LPVOID lpBuffer, SIZE_T nSize,
-                           SIZE_T* lpNumberOfBytesRead);
+                           SIZE_T* lpNumberOfBytesRead) noexcept;
 BOOL UkiaWriteProcessMemory(HANDLE hProcess, LPVOID lpBaseAddress,
                             LPCVOID lpBuffer, SIZE_T nSize,
-                            SIZE_T* lpNumberOfBytesWritten);
+                            SIZE_T* lpNumberOfBytesWritten) noexcept;
 
 class ProcessManager {
  private:
@@ -126,7 +126,7 @@ class ProcessManager {
   DWORD64 ModuleAddress = 0;
 
  public:
-  inline ~ProcessManager() {
+  inline ~ProcessManager() noexcept {
     if (hProcess) CloseHandle(hProcess);
   }
 
@@ -134,12 +134,12 @@ class ProcessManager {
   HANDLE Source_Process = NULL;
   HANDLE target_handle = NULL;
 
-  StatusCode Attach(std::string ProcessName);
-  void Detach();
-  HWND GetWindowHandleFromProcessId(DWORD ProcessId);
-  bool IsActive();
+  StatusCode Attach(std::string ProcessName) noexcept;
+  void Detach() noexcept;
+  HWND GetWindowHandleFromProcessId(DWORD ProcessId) noexcept;
+  bool IsActive() noexcept;
   template <typename ReadType>
-  inline bool ReadMemory(DWORD64 Address, ReadType& Value, int Size) {
+  inline bool ReadMemory(DWORD64 Address, ReadType& Value, int Size) noexcept {
     _is_invalid(hProcess, false);
     _is_invalid(ProcessID, false);
 
@@ -150,7 +150,7 @@ class ProcessManager {
   }
 
   template <typename ReadType>
-  inline bool ReadMemory(DWORD64 Address, ReadType& Value) {
+  inline bool ReadMemory(DWORD64 Address, ReadType& Value) noexcept {
     _is_invalid(hProcess, false);
     _is_invalid(ProcessID, false);
 
@@ -161,7 +161,7 @@ class ProcessManager {
   }
 
   template <typename ReadType>
-  inline bool WriteMemory(DWORD64 Address, ReadType& Value, int Size) {
+  inline bool WriteMemory(DWORD64 Address, ReadType& Value, int Size) noexcept {
     _is_invalid(hProcess, false);
     _is_invalid(ProcessID, false);
 
@@ -172,7 +172,7 @@ class ProcessManager {
   }
 
   template <typename ReadType>
-  inline bool WriteMemory(DWORD64 Address, ReadType& Value) {
+  inline bool WriteMemory(DWORD64 Address, ReadType& Value) noexcept {
     _is_invalid(hProcess, false);
     _is_invalid(ProcessID, false);
 
@@ -181,14 +181,15 @@ class ProcessManager {
       return true;
     return false;
   }
-  std::string ReadString(DWORD64 address, size_t maxLength = 256);
-  DWORD GetProcessID(std::string ProcessName);
-  DWORD64 TraceAddress(DWORD64 BaseAddress, std::vector<DWORD> Offsets);
-  HMODULE GetProcessModuleHandle(std::string ModuleName);
+  std::string ReadString(DWORD64 address, size_t maxLength = 256) noexcept;
+  DWORD GetProcessID(std::string ProcessName) noexcept;
+  DWORD64 TraceAddress(DWORD64 BaseAddress,
+                       std::vector<DWORD> Offsets) noexcept;
+  HMODULE GetProcessModuleHandle(std::string ModuleName) noexcept;
 };
 inline ProcessManager ProcessMgr;
 
-BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType);
-int UkiaInit(int argc, char* argv[]);
-int UkiaExit(DWORD code = 0);
+BOOL WINAPI ConsoleCtrlHandler(DWORD dwCtrlType) noexcept;
+int UkiaInit(int argc, char* argv[]) noexcept;
+int UkiaExit(DWORD code = 0) noexcept;
 }  // namespace Ukia

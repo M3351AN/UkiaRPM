@@ -69,11 +69,23 @@
     <ClCompile Include="Overlay.cc">
       <Filter>头文件</Filter>
     </ClCompile>
-    <ClCompile Include="UkiaStuff.cc">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Functions\Func.cc">
       <Filter>头文件\Functions</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions\Aimbot\RCS.cc">
+      <Filter>头文件\Functions\Aimbot</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions\Miscs\Miscs.cc">
+      <Filter>头文件\Functions\Miscs</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions\Visuals\ESP.cc">
+      <Filter>头文件\Functions\Visuals</Filter>
+    </ClCompile>
+    <ClCompile Include="Functions\Visuals\Radar.cc">
+      <Filter>头文件\Functions\Visuals</Filter>
+    </ClCompile>
+    <ClCompile Include="UkiaStuff.cc">
+      <Filter>头文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

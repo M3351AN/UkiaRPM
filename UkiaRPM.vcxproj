@@ -235,8 +235,12 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Functions\Aimbot\RCS.cc" />
     <ClCompile Include="Functions\ConfigSaver.cc" />
     <ClCompile Include="Functions\Func.cc" />
+    <ClCompile Include="Functions\Miscs\Miscs.cc" />
+    <ClCompile Include="Functions\Visuals\ESP.cc" />
+    <ClCompile Include="Functions\Visuals\Radar.cc" />
     <ClCompile Include="ImGui\imgui.cpp" />
     <ClCompile Include="ImGui\imgui_demo.cpp" />
     <ClCompile Include="ImGui\imgui_draw.cpp" />

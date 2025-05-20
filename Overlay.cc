@@ -2,7 +2,7 @@
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "Utils/stb_image.h"
-std::string string_To_UTF8(const std::string& str) {
+std::string string_To_UTF8(const std::string& str) noexcept {
   int nwLen = ::MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, NULL, 0);
   wchar_t* pwBuf = new wchar_t[nwLen + 1];
   ZeroMemory(pwBuf, nwLen * 2 + 2);
@@ -20,7 +20,7 @@ std::string string_To_UTF8(const std::string& str) {
   return retStr;
 }
 
-void DrawStrokeText(int x, int y, RGBA* color, const char* str) {
+void DrawStrokeText(int x, int y, RGBA* color, const char* str) noexcept {
   ImFont a;
   std::string utf_8_1 = std::string(str);
   std::string utf_8_2 = string_To_UTF8(utf_8_1);
@@ -52,7 +52,7 @@ void DrawStrokeText(int x, int y, RGBA* color, const char* str) {
       utf_8_2.c_str());
 }
 
-void DrawNewText(int x, int y, RGBA* color, const char* str) {
+void DrawNewText(int x, int y, RGBA* color, const char* str) noexcept {
   ImFont a;
   std::string utf_8_1 = std::string(str);
   std::string utf_8_2 = string_To_UTF8(utf_8_1);
@@ -64,7 +64,7 @@ void DrawNewText(int x, int y, RGBA* color, const char* str) {
       utf_8_2.c_str());
 }
 
-void DrawRect(int x, int y, int w, int h, RGBA* color, int thickness) {
+void DrawRect(int x, int y, int w, int h, RGBA* color, int thickness) noexcept {
   ImGui::GetBackgroundDrawList()->AddRect(
       ImVec2(x, y), ImVec2(x + w, y + h),
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
@@ -74,7 +74,7 @@ void DrawRect(int x, int y, int w, int h, RGBA* color, int thickness) {
 }
 
 void DrawEspBox2D(Vector2 feet, Vector2 head, RGBA* color,
-                         int thickness) {
+                  int thickness) noexcept {
   float t = feet.x - head.x;
   float height = feet.y - head.y;
   float pd = feet.x + t;
@@ -96,7 +96,7 @@ void DrawEspBox2D(Vector2 feet, Vector2 head, RGBA* color,
                     ImColor(0, 0, 0, 255), 0.0f, 0, thickness);
 }
 
-void DrawNameTag(Vector2 feet, Vector2 head, char* name) {
+void DrawNameTag(Vector2 feet, Vector2 head, char* name) noexcept {
   float t = feet.x - head.x;
   float pd = feet.x + t;
 
@@ -113,7 +113,7 @@ void DrawNameTag(Vector2 feet, Vector2 head, char* name) {
   draw_list->AddText(textPos, IM_COL32(255, 255, 255, 255), name);
 }
 
-void DrawFilledRect(int x, int y, int w, int h, RGBA* color) {
+void DrawFilledRect(int x, int y, int w, int h, RGBA* color) noexcept {
   ImGui::GetBackgroundDrawList()->AddRectFilled(
       ImVec2(x, y), ImVec2(x + w, y + h),
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
@@ -122,7 +122,7 @@ void DrawFilledRect(int x, int y, int w, int h, RGBA* color) {
       0, 0);
 }
 
-void DrawCircleFilled(int x, int y, int radius, RGBA* color) {
+void DrawCircleFilled(int x, int y, int radius, RGBA* color) noexcept {
   ImGui::GetBackgroundDrawList()->AddCircleFilled(
       ImVec2(x, y), radius,
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
@@ -130,7 +130,7 @@ void DrawCircleFilled(int x, int y, int radius, RGBA* color) {
                                             color->A / 255.0)));
 }
 
-void DrawCircle(int x, int y, int radius, RGBA* color, int segments) {
+void DrawCircle(int x, int y, int radius, RGBA* color, int segments) noexcept {
   ImGui::GetBackgroundDrawList()->AddCircle(
       ImVec2(x, y), radius,
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
@@ -139,8 +139,8 @@ void DrawCircle(int x, int y, int radius, RGBA* color, int segments) {
       segments);
 }
 
-void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3,
-                         RGBA* color, float thickne) {
+void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA* color,
+                  float thickne) noexcept {
   ImGui::GetBackgroundDrawList()->AddTriangle(
       ImVec2(x1, y1), ImVec2(x2, y2), ImVec2(x3, y3),
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
@@ -150,7 +150,7 @@ void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3,
 }
 
 void DrawTriangleFilled(int x1, int y1, int x2, int y2, int x3, int y3,
-                               RGBA* color) {
+                        RGBA* color) noexcept {
   ImGui::GetBackgroundDrawList()->AddTriangleFilled(
       ImVec2(x1, y1), ImVec2(x2, y2), ImVec2(x3, y3),
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
@@ -159,7 +159,7 @@ void DrawTriangleFilled(int x1, int y1, int x2, int y2, int x3, int y3,
 }
 
 void DrawLine(int x1, int y1, int x2, int y2, RGBA* color,
-                     int thickness) {
+              int thickness) noexcept {
   ImGui::GetBackgroundDrawList()->AddLine(
       ImVec2(x1, y1), ImVec2(x2, y2),
       ImGui::ColorConvertFloat4ToU32(ImVec4(color->R / 255.0, color->G / 255.0,
@@ -169,7 +169,7 @@ void DrawLine(int x1, int y1, int x2, int y2, RGBA* color,
 }
 
 void DrawCornerBox(int x, int y, int w, int h, int borderPx,
-                          RGBA* color) {
+                   RGBA* color) noexcept {
   DrawFilledRect(x + borderPx, y, w / 3, borderPx, color);
   DrawFilledRect(x + w - w / 3 + borderPx, y, w / 3, borderPx, color);
   DrawFilledRect(x, y, borderPx, h / 3, color);
@@ -182,9 +182,8 @@ void DrawCornerBox(int x, int y, int w, int h, int borderPx,
                  h / 3, color);
 }
 bool LoadTextureFromMemory(IDirect3DDevice9* device,
-                                  const unsigned char* image_data,
-                                  int image_size,
-                                  IDirect3DTexture9** out_texture) {
+                           const unsigned char* image_data, int image_size,
+                           IDirect3DTexture9** out_texture) noexcept {
   int width, height, channels;
   unsigned char* data = stbi_load_from_memory(image_data, image_size, &width,
                                               &height, &channels, 4);

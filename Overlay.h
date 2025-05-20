@@ -54,9 +54,9 @@ class Vector2 {
   bool operator!=(Vector2 Vector2_) {
     return x != Vector2_.x || y != Vector2_.y;
   }
-  ImVec2 ToImVector2() { return ImVec2(x, y); }
-  float Length() { return sqrtf(powf(x, 2) + powf(y, 2)); }
-  float DistanceTo(const Vector2& Pos) {
+  ImVec2 ToImVector2() noexcept { return ImVec2(x, y); }
+  float Length() noexcept { return sqrtf(powf(x, 2) + powf(y, 2)); }
+  float DistanceTo(const Vector2& Pos) noexcept {
     return sqrtf(powf(Pos.x - x, 2) + powf(Pos.y - y, 2));
   }
 };
@@ -90,11 +90,13 @@ class Vector3 {
   bool operator!=(Vector3 Vector3_) {
     return x != Vector3_.x || y != Vector3_.y || z != Vector3_.z;
   }
-  float Length() { return sqrtf(powf(x, 2) + powf(y, 2) + powf(z, 2)); }
-  float DistanceTo(const Vector3& Pos) {
+  float Length() noexcept {
+    return sqrtf(powf(x, 2) + powf(y, 2) + powf(z, 2));
+  }
+  float DistanceTo(const Vector3& Pos) noexcept {
     return sqrtf(powf(Pos.x - x, 2) + powf(Pos.y - y, 2) + powf(Pos.z - z, 2));
   }
-  void Normalize() {
+  void Normalize() noexcept {
     float len = Length();
     if (len != 0) {
       x /= len;
@@ -109,38 +111,37 @@ class Vector3 {
   }
 };
 #endif
-std::string string_To_UTF8(const std::string& str);
+std::string string_To_UTF8(const std::string& str) noexcept;
 
-void DrawStrokeText(int x, int y, RGBA* color, const char* str);
+void DrawStrokeText(int x, int y, RGBA* color, const char* str) noexcept;
 
-void DrawNewText(int x, int y, RGBA* color, const char* str);
+void DrawNewText(int x, int y, RGBA* color, const char* str) noexcept;
 
-void DrawRect(int x, int y, int w, int h, RGBA* color, int thickness);
+void DrawRect(int x, int y, int w, int h, RGBA* color, int thickness) noexcept;
 
 void DrawEspBox2D(Vector2 feet, Vector2 head, RGBA* color,
-                         int thickness);
+                  int thickness) noexcept;
 
-void DrawNameTag(Vector2 feet, Vector2 head, char* name);
+void DrawNameTag(Vector2 feet, Vector2 head, char* name) noexcept;
 
-void DrawFilledRect(int x, int y, int w, int h, RGBA* color);
+void DrawFilledRect(int x, int y, int w, int h, RGBA* color) noexcept;
 
-void DrawCircleFilled(int x, int y, int radius, RGBA* color);
+void DrawCircleFilled(int x, int y, int radius, RGBA* color) noexcept;
 
-void DrawCircle(int x, int y, int radius, RGBA* color, int segments);
+void DrawCircle(int x, int y, int radius, RGBA* color, int segments) noexcept;
 
-void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3,
-                         RGBA* color, float thickne);
+void DrawTriangle(int x1, int y1, int x2, int y2, int x3, int y3, RGBA* color,
+                  float thickne) noexcept;
 
 void DrawTriangleFilled(int x1, int y1, int x2, int y2, int x3, int y3,
-                               RGBA* color);
+                        RGBA* color) noexcept;
 
 void DrawLine(int x1, int y1, int x2, int y2, RGBA* color,
-                     int thickness);
+              int thickness) noexcept;
 
 void DrawCornerBox(int x, int y, int w, int h, int borderPx,
-                          RGBA* color);
+                   RGBA* color) noexcept;
 
 bool LoadTextureFromMemory(IDirect3DDevice9* device,
-                                  const unsigned char* image_data,
-                                  int image_size,
-                                  IDirect3DTexture9** out_texture);
+                           const unsigned char* image_data, int image_size,
+                           IDirect3DTexture9** out_texture) noexcept;

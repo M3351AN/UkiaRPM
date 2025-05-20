@@ -9,7 +9,7 @@
 #include "Visuals/Radar.h"
 #include "menu.h"
 
-void RenderFunctions(EntityList& entityList) {
+void RenderFunctions(EntityList& entityList) noexcept {
   ESP::ESPRun(entityList);
   Radar::RadarRun(entityList);
   Misc::PitchIndicator(entityList);
@@ -20,10 +20,12 @@ void RenderFunctions(EntityList& entityList) {
       10, ImGui::GetIO().DisplaySize.y - 20, &White,
       UkiaData::strHWID.substr(UkiaData::strHWID.length() - 16).c_str());
 }
-void ViewFunctions(EntityList& entityList) {
+void ViewFunctions(EntityList& entityList) noexcept {
   Misc::FastStop(entityList);
   RCS::RCSRun(entityList);
   Misc::SonarRun(entityList);
 }
-void MemoryFunctions(EntityList& entityList) { Misc::FoundEnemy(entityList); }
-void NonMemoryFunctions() { Sonar::SoundThread(); }
+void MemoryFunctions(EntityList& entityList) noexcept {
+  Misc::FoundEnemy(entityList);
+}
+void NonMemoryFunctions() noexcept { Sonar::SoundThread(); }

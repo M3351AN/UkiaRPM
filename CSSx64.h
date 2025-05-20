@@ -59,7 +59,7 @@ class ViewMatrix {
 
   float* operator[](int index) { return matrix[index]; }
 
-  void SetScreenData(Vector2 screenSize) {
+  void SetScreenData(Vector2 screenSize) noexcept {
     screen_size = screenSize;
     screen_center = {screen_size.x / 2.f, screen_size.y / 2.f};
   }
@@ -69,14 +69,14 @@ class ViewMatrix {
            std::chrono::milliseconds(2);
   }
 
-  void Update(uintptr_t engineAddress) {
+  void Update(uintptr_t engineAddress) noexcept {
     uintptr_t viewMatrixPtr;
     Ukia::ProcessMgr.ReadMemory(engineAddress + 0x00698F18, viewMatrixPtr);
     Ukia::ProcessMgr.ReadMemory(viewMatrixPtr + 0x2D4, matrix);
     last_update = std::chrono::steady_clock::now();
   }
 
-  bool WorldToScreen(Vector3 position, Vector2& out_position) {
+  bool WorldToScreen(Vector3 position, Vector2& out_position) noexcept {
     out_position.x = matrix[0][0] * position.x + matrix[0][1] * position.y +
                      matrix[0][2] * position.z + matrix[0][3];
     out_position.y = matrix[1][0] * position.x + matrix[1][1] * position.y +
@@ -165,7 +165,7 @@ struct LocalData : public BaseEntityData {
 namespace Memory {
 inline uintptr_t clientAddress, engineAddress, nameListBase;
 
-inline bool UpdateAddress() {
+inline bool UpdateAddress() noexcept {
   clientAddress = reinterpret_cast<uintptr_t>(
       Ukia::ProcessMgr.GetProcessModuleHandle(XorStr("client.dll")));
 
@@ -187,7 +187,7 @@ class Entity {
   Entity() : address(0), index(-1) {}
   Entity(uintptr_t addr, int idx) : address(addr), index(idx) {}
 
-  void RefreshFullData() {
+  void RefreshFullData() noexcept {
     if (address != 0) {
       memset(&data, 0, sizeof(data));
       Ukia::ProcessMgr.ReadMemory(address, data);
@@ -199,7 +199,7 @@ class Entity {
     }
   }
 
-  bool IsValid() const {
+  bool IsValid() const noexcept {
     return address != 0 && data.health > 0 && data.health < 250 &&
            data.life_state == 0;
   }
@@ -234,12 +234,12 @@ class EntityList {
   EntityBuffer front_buffer, back_buffer;
   mutable std::mutex buffer_mtx;
 
-  EntityList() {
+  EntityList() noexcept {
     front_buffer.entities.fill(Entity());
     back_buffer.entities.fill(Entity());
   }
 
-  void UpdateAll() {
+  void UpdateAll() noexcept {
     std::lock_guard<std::mutex> lock(buffer_mtx);
 
     constexpr uintptr_t kEntityListOffset = 0x6098C8;
