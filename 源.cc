@@ -1,7 +1,6 @@
 ﻿#include <ShlObj.h>
 #include <mmsystem.h>
 #include <stdio.h>
-#include <windows.h>
 
 #include <array>
 #include <cmath>

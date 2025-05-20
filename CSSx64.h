@@ -1,13 +1,15 @@
 #pragma once
+#include <Windows.h>
 #include <Uxtheme.h>
 #include <d3d9.h>
 #include <dwmapi.h>
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <execution>
 #include <iostream>
 #include <mutex>
-
 
 #include "UkiaStuff.h"
 #include "Utils/XorStr.h"
@@ -17,26 +19,28 @@
 #pragma comment(lib, "d3d9.lib")
 #pragma comment(lib, "dwmapi.lib")
 
+#ifndef CS_VERSION
 #define CS_VERSION 9540945
+#endif
 
 namespace global {
-std::atomic<bool> isRunning(true);
+inline std::atomic<bool> isRunning(true);
 
-DWORD uiAccessStatus;
-DWORD processId;
+inline DWORD uiAccessStatus;
+inline DWORD processId;
 
-DWORD gameVersion;
+inline DWORD gameVersion;
 
 inline HDC hdcBuffer = NULL;
 inline HBITMAP hbmBuffer = NULL;
 
-RECT gameBounds;
-HWND hwnd_;
+inline RECT gameBounds;
+inline HWND hwnd_;
 
-Vector2 screenSize;
-Vector2 screenPos;
+inline Vector2 screenSize;
+inline Vector2 screenPos;
 
-std::string infos;
+inline std::string infos;
 
 inline IDirect3DTexture9* Shigure = nullptr;
 }  // namespace global
@@ -159,9 +163,9 @@ struct LocalData : public BaseEntityData {
 #pragma pack(pop)
 
 namespace Memory {
-uintptr_t clientAddress, engineAddress, nameListBase;
+inline uintptr_t clientAddress, engineAddress, nameListBase;
 
-bool UpdateAddress() {
+inline bool UpdateAddress() {
   clientAddress = reinterpret_cast<uintptr_t>(
       Ukia::ProcessMgr.GetProcessModuleHandle(XorStr("client.dll")));
 
@@ -221,7 +225,6 @@ class EntityList {
   uintptr_t local_player_address;
   ViewMatrix view_matrix;
 
-  // Ë«»º³å½á¹¹
   struct EntityBuffer {
     std::array<Entity, MAX_ENTITIES> entities;
     std::array<uintptr_t, MAX_ENTITIES> address_cache;
@@ -272,18 +275,18 @@ class EntityList {
   const auto& GetCurrentEntities() const { return front_buffer.entities; }
 };
 
-EntityList entity_list;
+inline EntityList entity_list;
 
 namespace DirectX9Interface {
-IDirect3D9Ex* Direct3D9 = NULL;
-IDirect3DDevice9Ex* pDevice = NULL;
-D3DPRESENT_PARAMETERS pParams = {NULL};
-MARGINS Margin = {-1};
-MSG Message = {NULL};
+inline IDirect3D9Ex* Direct3D9 = NULL;
+inline IDirect3DDevice9Ex* pDevice = NULL;
+inline D3DPRESENT_PARAMETERS pParams = {NULL};
+inline MARGINS Margin = {-1};
+inline MSG Message = {NULL};
 }  // namespace DirectX9Interface
 
 namespace OverlayWindow {
-WNDCLASSEXA WindowClass;
-HWND Hwnd;
-LPCSTR Name;
+inline WNDCLASSEXA WindowClass;
+inline HWND Hwnd;
+inline LPCSTR Name;
 }  // namespace OverlayWindow
