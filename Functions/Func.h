@@ -22,9 +22,11 @@ inline void RenderFunctions(EntityList& entityList) {
       UkiaData::strHWID.substr(UkiaData::strHWID.length() - 16).c_str());
 }
 inline void ViewFunctions(EntityList& entityList) { 
+    Misc::FastStop(entityList); 
     RCS::RCSRun(entityList); 
     Misc::SonarRun(entityList); 
 }
 inline void MemoryFunctions(EntityList& entityList) {
   Misc::FoundEnemy(entityList);
 }
+inline void NonMemoryFunctions() { Sonar::SoundThread(); }

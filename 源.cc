@@ -462,7 +462,7 @@ class ScopedThreadManager {
       m_threads.emplace_back([&] { EntityUpdateThread(); });
       m_threads.emplace_back([&] { ViewProcessThread(); });
       m_threads.emplace_back([&] { MemoryProcessThread(); });
-      m_threads.emplace_back([&] { Sonar::SoundThread(); });
+      m_threads.emplace_back([&] { NonMemoryProcessThread(); });
       return true;
     } catch (const std::exception& e) {
       MessageBoxA(nullptr, e.what(), XorStr("Thread Creation Error"),
@@ -507,6 +507,12 @@ class ScopedThreadManager {
   void MemoryProcessThread() {
     while (global::isRunning) {
       MemoryFunctions(entity_list);
+      std::this_thread::sleep_for(std::chrono::milliseconds(15));
+    }
+  }
+  void NonMemoryProcessThread() {
+    while (global::isRunning) {
+      NonMemoryFunctions();
       std::this_thread::sleep_for(std::chrono::milliseconds(15));
     }
   }

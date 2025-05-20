@@ -183,7 +183,10 @@ inline void DrawMenu() {
     {
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                           ImVec2(style.FramePadding.x, 0));
-
+      ImGui::Checkbox(XorStr("fast stop"), &config::FastStop);
+      ImGui::SliderFloat(XorStr("min velocity"), &config::FastStopMinVelocity, 2.5f,
+                         100.f,
+                         XorStr("%.1f u/s"));
       ImGui::PopStyleVar();
     }
     ImGui::EndChild();

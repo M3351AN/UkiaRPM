@@ -1,27 +1,30 @@
 #pragma once
 #include "../Overlay.h"
 
-#define AUTO_CONFIG_VARS     \
-  X(RCS, bool)               \
-  X(RCSScale.x, float)       \
-  X(RCSScale.y, float)       \
-  X(ESP, bool)               \
-  X(ESPDormantTime, float)   \
-  X(ESPInfo, bool)           \
-  X(ESPBox, bool)            \
-  X(ESPName, bool)           \
-  X(Radar, bool)             \
-  X(RadarDormantTime, float) \
-  X(RadarCrossLine, bool)    \
-  X(RadarPointSize, float)   \
-  X(RadarProportion, float)  \
-  X(RadarRange, float)       \
-  X(Sonar, bool)             \
-  X(PitchIndicator, bool)    \
-  X(InfoString, bool)        \
-  X(TeamCheck, bool)         \
-  X(BypassCapture, bool)     \
+#define AUTO_CONFIG_VARS        \
+  X(RCS, bool)                  \
+  X(RCSScale.x, float)          \
+  X(RCSScale.y, float)          \
+  X(ESP, bool)                  \
+  X(ESPDormantTime, float)      \
+  X(ESPInfo, bool)              \
+  X(ESPBox, bool)               \
+  X(ESPName, bool)              \
+  X(Radar, bool)                \
+  X(RadarDormantTime, float)    \
+  X(RadarCrossLine, bool)       \
+  X(RadarPointSize, float)      \
+  X(RadarProportion, float)     \
+  X(RadarRange, float)          \
+  X(Sonar, bool)                \
+  X(PitchIndicator, bool)       \
+  X(InfoString, bool)           \
+  X(FastStop, bool)             \
+  X(FastStopMinVelocity, float) \
+  X(TeamCheck, bool)            \
+  X(BypassCapture, bool)        \
   X(Style, int)
+
 #ifndef UKIARPM_CONFIGS
 #define UKIARPM_CONFIGS
 namespace config {
@@ -47,6 +50,8 @@ inline float RadarRange = 150.f;
 inline bool Sonar = false;
 inline bool PitchIndicator = true;
 inline bool InfoString = true;
+inline bool FastStop = false;
+inline float FastStopMinVelocity = 24.f;
 
 inline bool TeamCheck = true;
 inline bool BypassCapture = false;
