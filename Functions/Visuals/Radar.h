@@ -7,22 +7,22 @@ namespace Radar {
 class Base_Radar {
  public:
   // 设置雷达数据
-  void SetSize(const float& Size);
-  void SetPos(const ImVec2& Pos);
-  void SetRange(const float& Range);
-  void SetCrossColor(const ImColor& Color);
-  void SetProportion(const float& Proportion);
-  void SetDrawList(ImDrawList* DrawList);
+  inline void SetSize(const float& Size);
+  inline void SetPos(const ImVec2& Pos);
+  inline void SetRange(const float& Range);
+  inline void SetCrossColor(const ImColor& Color);
+  inline void SetProportion(const float& Proportion);
+  inline void SetDrawList(ImDrawList* DrawList);
   // 获取雷达数据
   float GetSize();
   ImVec2 GetPos();
   // 添加绘制点
-  void AddPoint(const Vector3& LocalPos, const float& LocalYaw,
+  inline void AddPoint(const Vector3& LocalPos, const float& LocalYaw,
                 const Vector3& Pos, ImColor Color, int Type = 0,
                 float Yaw = 0.0f);
   // 渲染
-  void Render();
-  void RadarSetting();
+  inline void Render();
+  inline void RadarSetting();
  public:
   ImDrawList* DrawList = nullptr;
   // 十字显示
@@ -52,7 +52,7 @@ class Base_Radar {
   std::vector<std::tuple<ImVec2, ImColor, int, float>> Points;
 };
 
-ImVec2 RevolveCoordinatesSystem(float RevolveAngle, ImVec2 OriginPos,
+inline ImVec2 RevolveCoordinatesSystem(float RevolveAngle, ImVec2 OriginPos,
                                 ImVec2 DestPos) {
   ImVec2 ResultPos;
   if (RevolveAngle == 0) return DestPos;
@@ -64,29 +64,31 @@ ImVec2 RevolveCoordinatesSystem(float RevolveAngle, ImVec2 OriginPos,
                 (DestPos.y - OriginPos.y) * cos(M_DEG2RAD(RevolveAngle));
   return ResultPos;
 }
-void Base_Radar::SetRange(const float& Range) { this->RenderRange = Range; }
+inline void Base_Radar::SetRange(const float& Range) {
+  this->RenderRange = Range;
+}
 
-void Base_Radar::SetCrossColor(const ImColor& Color) {
+inline void Base_Radar::SetCrossColor(const ImColor& Color) {
   this->CrossColor = Color;
 }
 
-void Base_Radar::SetPos(const ImVec2& Pos) { this->Pos = Pos; }
+inline void Base_Radar::SetPos(const ImVec2& Pos) { this->Pos = Pos; }
 
-void Base_Radar::SetSize(const float& Size) { this->Width = Size; }
+inline void Base_Radar::SetSize(const float& Size) { this->Width = Size; }
 
-float Base_Radar::GetSize() { return this->Width; }
+inline float Base_Radar::GetSize() { return this->Width; }
 
-ImVec2 Base_Radar::GetPos() { return this->Pos; }
+inline ImVec2 Base_Radar::GetPos() { return this->Pos; }
 
-void Base_Radar::SetProportion(const float& Proportion) {
+inline void Base_Radar::SetProportion(const float& Proportion) {
   this->Proportion = Proportion;
 }
 
-void Base_Radar::SetDrawList(ImDrawList* DrawList) {
+inline void Base_Radar::SetDrawList(ImDrawList* DrawList) {
   this->DrawList = DrawList;
 }
 
-void Base_Radar::AddPoint(const Vector3& LocalPos, const float& LocalYaw,
+inline void Base_Radar::AddPoint(const Vector3& LocalPos, const float& LocalYaw,
                           const Vector3& Pos, ImColor Color, int Type,
                           float Yaw) {
   ImVec2 PointPos;
@@ -120,7 +122,8 @@ void Base_Radar::AddPoint(const Vector3& LocalPos, const float& LocalYaw,
   this->Points.push_back(Data);
 }
 
-void DrawTriangle(ImVec2 Center, ImColor Color, float Width, float Height,
+inline void DrawTriangle(ImVec2 Center, ImColor Color, float Width,
+                         float Height,
                   float Yaw) {
   ImVec2 a, b, c;
   ImVec2 Re_a, Re_b, Re_c;
@@ -134,7 +137,7 @@ void DrawTriangle(ImVec2 Center, ImColor Color, float Width, float Height,
       ImVec2(a.x, a.y), ImVec2(b.x, b.y), ImVec2(c.x, c.y), Color);
 }
 
-void Base_Radar::Render() {
+inline void Base_Radar::Render() {
   if (Width <= 0) return;
 
   // Cross
@@ -224,7 +227,7 @@ void Base_Radar::Render() {
   if (this->Points.size() > 0) this->Points.clear();
 }
 
-void Base_Radar::RadarSetting() {
+inline void Base_Radar::RadarSetting() {
   // Radar window
   ImGui::SetNextWindowBgAlpha(0.f);
   ImGui::SetNextWindowSize({config::RadarRange * 2, config::RadarRange * 2},

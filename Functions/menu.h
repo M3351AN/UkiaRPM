@@ -131,10 +131,16 @@ inline void DrawMenu() {
 
     ImGui::BeginChild(XorStr("Others"), child_size);
     {
-      // ImGui::Checkbox(XorStr("hitmark"), &C_GET(bool, Vars.bHitMark));
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                           ImVec2(style.FramePadding.x, 0));
-
+      ImGui::Checkbox(XorStr("radar"), &config::Radar);
+      ImGui::Checkbox(XorStr("crossline"), &config::RadarCrossLine);
+      ImGui::SliderFloat(XorStr("point size"), &config::RadarPointSize, 0.5f,
+                         5.f, XorStr("%.1f p"));
+      ImGui::SliderFloat(XorStr("proportion"), &config::RadarProportion, 500.f,
+                         5000.f, XorStr("%.1f u"));
+      ImGui::SliderFloat(XorStr("range"), &config::RadarRange, 50.f,
+                         300.f, XorStr("%.1f u"));
       ImGui::PopStyleVar();
     }
     ImGui::EndChild();

@@ -15,7 +15,7 @@ std::atomic<bool> running{true};
 std::mutex soundMutex;
 SoundParams currentParams;
 
-void SoundThread() {
+inline void SoundThread() {
   auto lastBeep = std::chrono::steady_clock::now();
 
   while (running) {

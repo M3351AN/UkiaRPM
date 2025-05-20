@@ -21,31 +21,33 @@
   X(TeamCheck, bool)        \
   X(BypassCapture, bool)    \
   X(Style, int)
-
+#ifndef UKIARPM_CONFIGS
+#define UKIARPM_CONFIGS
 namespace config {
 inline std::string path = "";
 inline bool ShowMenu = false;
 
-bool RCS = false;
-Vector2 RCSScale = {-2.f, 1.5f};
+inline bool RCS = false;
+inline Vector2 RCSScale = {-2.f, 1.5f};
 
-bool ESP = true;
-float ESPDormantTime = 1.f;
-bool ESPInfo = false;
-bool ESPBox = true;
-bool ESPName = true;
+inline bool ESP = true;
+inline float ESPDormantTime = 1.f;
+inline bool ESPInfo = false;
+inline bool ESPBox = true;
+inline bool ESPName = true;
 
-bool Radar = true;
-bool RadarCrossLine = true;
-float RadarPointSize = 1.f;
-float RadarProportion = 3300.f;
-float RadarRange = 150.f;
+inline bool Radar = true;
+inline bool RadarCrossLine = true;
+inline float RadarPointSize = 1.f;
+inline float RadarProportion = 3300.f;
+inline float RadarRange = 150.f;
 
-bool Sonar = false;
-bool PitchIndicator = true;
-bool InfoString = true;
+inline bool Sonar = false;
+inline bool PitchIndicator = true;
+inline bool InfoString = true;
 
-bool TeamCheck = true;
-bool BypassCapture = false;
-int Style = 2;
+inline bool TeamCheck = true;
+inline bool BypassCapture = false;
+inline int Style = 2;
 }  // namespace config
+#endif

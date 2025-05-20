@@ -63,8 +63,11 @@
     <ClCompile Include="Utils\uiaccess.c">
       <Filter>头文件\Utils</Filter>
     </ClCompile>
+    <ClCompile Include="Functions\ConfigSaver.cc">
+      <Filter>头文件\Functions</Filter>
+    </ClCompile>
     <ClCompile Include="Overlay.cc">
-      <Filter>源文件</Filter>
+      <Filter>头文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

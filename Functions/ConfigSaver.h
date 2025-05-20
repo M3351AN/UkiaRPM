@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string>
-
 #include "../ImGui/imgui.h"
 #include "../Utils/yaml-cpp/yaml.h"
 #include "config.h"
@@ -21,7 +19,7 @@ static std::filesystem::file_time_type lastConfigScanTime;
 
 namespace MyConfigSaver {
 
-void UpdateConfigFiles() {
+inline void UpdateConfigFiles() {
   static std::vector<std::string> currentFiles;
   currentFiles.clear();
 
@@ -95,83 +93,21 @@ void UpdateConfigFiles() {
   configFiles.swap(newFiles);
 }
 
-static std::string GetAuthorFromFile(const std::string& filePath) {
-  std::ifstream file(filePath);
-  std::string line;
-  for (int i = 0; i < 3 && std::getline(file, line); ++i) {
-    if (i == 2 && line.find(XorStr("# Author: ")) == 0) {
-      return line.substr(10);
-    }
-  }
-  return "";
-}
+static std::string GetAuthorFromFile(const std::string& filePath);
 
-void SaveConfig(const std::string& filename, const std::string& author) {
-  const std::string fullPath = config::path + XorStr("/") + filename;
-  const bool isNewFile = !std::filesystem::exists(fullPath);
+void SaveConfig(const std::string& filename, const std::string& author);
 
-  std::string actualAuthor = author;
-
-  if (isNewFile) {
-    if (actualAuthor.empty()) {
-      if (const char* username = std::getenv(XorStr("USERNAME"))) {
-        actualAuthor = username;
-      }
-    }
-  } else {
-    actualAuthor = GetAuthorFromFile(fullPath);
-  }
-
-  YAML::Emitter emitter;
-  emitter << YAML::Comment(
-      XorStr("UkiaRPM-CSS Configuration File\nVersion: 1.0\nAuthor: ") +
-      actualAuthor);
-  emitter << YAML::BeginMap;
-
-  emitter << YAML::Key << XorStr("config") << YAML::Value << YAML::BeginMap;
-#define X(var, type) emitter << YAML::Key << #var << YAML::Value << config::var;
-  AUTO_CONFIG_VARS
-#undef X
-  emitter << YAML::EndMap;
-
-  emitter << YAML::EndMap;
-
-  std::ofstream configFile(fullPath);
-  if (!configFile.is_open()) {
-    MessageBoxA(nullptr, (XorStr("Could not open file:") + fullPath).c_str(),
-                XorStr("UkiaRPM"), MB_OK);
-    return;
-  }
-  configFile << emitter.c_str();
-  configFile.close();
-
-  printf(XorStr("Configuration %s at %s (Author: %s)\n"),
-         isNewFile ? XorStr("created") : XorStr("updated"), fullPath.c_str(),
-         actualAuthor.c_str());
-}
-
-void LoadConfig(const std::string& filename) {
-  YAML::Node root = YAML::LoadFile(config::path + XorStr("/") + filename);
-  if (root["config"]) {
-    YAML::Node configNode = root["config"];
-#define X(var, type)                           \
-  if (configNode[#var]) {                      \
-    config::var = configNode[#var].as<type>(); \
-  }
-    AUTO_CONFIG_VARS
-#undef X
-  }
-}
+void LoadConfig(const std::string& filename);
 
 template <typename T>
-static T ReadData(const YAML::Node& node, T defaultValue) {
+inline static T ReadData(const YAML::Node& node, T defaultValue) {
   return node.IsDefined() ? node.as<T>() : defaultValue;
 }
-static int ReadOffset(const YAML::Node& node, int defaultValue) {
+inline static int ReadOffset(const YAML::Node& node, int defaultValue) {
   return node.IsDefined() ? std::stoi(node.as<std::string>(), nullptr, 16)
                           : defaultValue;
 }
-static uint32_t ImColorToUInt32(const ImColor& color) {
+inline static uint32_t ImColorToUInt32(const ImColor& color) {
   uint32_t r = static_cast<uint32_t>(color.Value.x * 255);
   uint32_t g = static_cast<uint32_t>(color.Value.y * 255) << 8;
   uint32_t b = static_cast<uint32_t>(color.Value.z * 255) << 16;
@@ -180,7 +116,7 @@ static uint32_t ImColorToUInt32(const ImColor& color) {
   return r | g | b | a;
 }
 
-static ImColor UInt32ToImColor(uint32_t value) {
+inline static ImColor UInt32ToImColor(uint32_t value) {
   ImColor TempColor;
   TempColor.Value.x = static_cast<float>(value & 0xFF) / 255.0f;
   TempColor.Value.y = static_cast<float>((value >> 8) & 0xFF) / 255.0f;
@@ -189,7 +125,7 @@ static ImColor UInt32ToImColor(uint32_t value) {
   return TempColor;
 }
 
-static std::vector<int> LoadVector(const YAML::Node& node,
+inline static std::vector<int> LoadVector(const YAML::Node& node,
                                    std::vector<int> defaultValue) {
   if (node.IsDefined() && node.IsSequence()) {
     std::vector<int> result;
