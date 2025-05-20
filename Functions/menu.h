@@ -105,7 +105,7 @@ inline void DrawMenu() {
                           ImVec2(style.FramePadding.x, 0));
 
       ImGui::Checkbox(XorStr("ESP"), &config::ESP);
-      ImGui::SliderFloat(XorStr("dormant time"), &config::ESPDormantTime, 0.f,
+      ImGui::SliderFloat(XorStr("dormant time##ESP"), &config::ESPDormantTime, 0.f,
                          10.f, XorStr("%.1f s"));
       ImGui::Checkbox(XorStr("player info"), &config::ESPInfo);
       ImGui::Checkbox(XorStr("box"), &config::ESPBox);
@@ -134,6 +134,8 @@ inline void DrawMenu() {
       ImGui::PushStyleVar(ImGuiStyleVar_FramePadding,
                           ImVec2(style.FramePadding.x, 0));
       ImGui::Checkbox(XorStr("radar"), &config::Radar);
+      ImGui::SliderFloat(XorStr("dormant time##Radar"), &config::RadarDormantTime,
+                         0.f, 10.f, XorStr("%.1f s"));
       ImGui::Checkbox(XorStr("crossline"), &config::RadarCrossLine);
       ImGui::SliderFloat(XorStr("point size"), &config::RadarPointSize, 0.5f,
                          5.f, XorStr("%.1f p"));

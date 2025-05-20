@@ -279,7 +279,7 @@ inline void Base_Radar::RadarSetting() {
         }
 
         if (currentTime - g_dormantStartTimes[ent.index] >
-            config::ESPDormantTime) {
+            config::RadarDormantTime) {
           continue;
         }
       } else {
